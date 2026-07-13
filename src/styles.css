@@ -1,0 +1,510 @@
+/* Relic Rails: Abyss Run — UI theme. Colors mirror src/render/palette.ts */
+:root {
+  --ember: #ffa826;
+  --ember-dim: #b96f12;
+  --prism: #c06cff;
+  --hazard: #ff3b2e;
+  --safe: #3ef0a0;
+  --ink: #f5ead8;
+  --ink-dim: #b9a88c;
+  --panel: rgba(20, 12, 6, 0.82);
+  --panel-line: rgba(255, 168, 38, 0.28);
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.55);
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #120a04;
+  font-family: 'Trebuchet MS', 'Segoe UI', Verdana, sans-serif;
+  color: var(--ink);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+#game-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#ui-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: calc(16px + var(--sat)) calc(16px + var(--sar)) calc(16px + var(--sab)) calc(16px + var(--sal));
+  pointer-events: auto;
+  transition: opacity 0.25s ease;
+}
+
+.screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* --- Buttons --- */
+button {
+  pointer-events: auto;
+  border: 2px solid var(--panel-line);
+  background: linear-gradient(180deg, rgba(60, 34, 12, 0.95), rgba(34, 18, 7, 0.95));
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  border-radius: 14px;
+  padding: 12px 26px;
+  min-height: 48px;
+  min-width: 48px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  letter-spacing: 0.04em;
+}
+button:active {
+  transform: scale(0.96);
+  filter: brightness(1.2);
+}
+button:focus-visible {
+  outline: 3px solid var(--ember);
+  outline-offset: 2px;
+}
+.btn-primary {
+  font-size: clamp(20px, 5.5vmin, 30px);
+  padding: 16px 54px;
+  border-color: var(--ember);
+  background: linear-gradient(180deg, #b96f12, #7c4408);
+  color: #fff6e6;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse {
+  50% {
+    box-shadow: 0 0 26px rgba(255, 168, 38, 0.55), var(--shadow);
+  }
+}
+.btn-ghost {
+  background: rgba(20, 12, 6, 0.6);
+  font-size: clamp(14px, 3.4vmin, 17px);
+}
+
+/* --- Loading --- */
+#loading {
+  background: radial-gradient(ellipse at 50% 40%, #241205 0%, #0d0602 75%);
+}
+.logo {
+  font-size: clamp(34px, 9vmin, 62px);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: var(--ember);
+  text-shadow: 0 0 26px rgba(255, 138, 20, 0.5), 0 3px 0 #5c3406;
+  text-align: center;
+  line-height: 1.05;
+}
+.logo small {
+  display: block;
+  font-size: clamp(15px, 3.6vmin, 22px);
+  color: var(--ink-dim);
+  letter-spacing: 0.38em;
+  margin-top: 6px;
+}
+.loadbar {
+  width: min(320px, 70vw);
+  height: 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.09);
+  overflow: hidden;
+  border: 1px solid var(--panel-line);
+}
+.loadbar > div {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--ember-dim), var(--ember));
+  transition: width 0.2s ease;
+}
+.loadhint {
+  color: var(--ink-dim);
+  font-size: 14px;
+}
+
+/* --- Menu --- */
+#menu {
+  justify-content: flex-end;
+  padding-bottom: calc(7vh + var(--sab));
+  background: linear-gradient(180deg, rgba(10, 5, 2, 0.35) 0%, transparent 30%, transparent 55%, rgba(8, 4, 2, 0.75) 100%);
+}
+#menu .logo {
+  position: absolute;
+  top: calc(6vh + var(--sat));
+  left: 0;
+  right: 0;
+}
+.menu-stats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.stat-chip {
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: 12px;
+  padding: 8px 16px;
+  text-align: center;
+  min-width: 90px;
+}
+.stat-chip .v {
+  font-size: clamp(17px, 4.4vmin, 24px);
+  font-weight: 800;
+  color: var(--ember);
+}
+.stat-chip .l {
+  font-size: 11px;
+  color: var(--ink-dim);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.menu-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.hint-line {
+  color: var(--ink-dim);
+  font-size: clamp(12px, 3vmin, 15px);
+  text-align: center;
+}
+
+/* --- HUD --- */
+#hud {
+  justify-content: flex-start;
+  align-items: stretch;
+  pointer-events: none;
+  padding: 0;
+  gap: 0;
+}
+.hud-top {
+  position: absolute;
+  top: calc(10px + var(--sat));
+  left: calc(12px + var(--sal));
+  right: calc(12px + var(--sar));
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.hud-chip {
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: 12px;
+  padding: 7px 14px;
+  font-weight: 800;
+  font-size: clamp(15px, 4vmin, 21px);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: var(--shadow);
+}
+.hud-chip .ico {
+  font-size: 0.9em;
+}
+#hud-score {
+  color: var(--ink);
+}
+#hud-combo {
+  color: var(--ember);
+  font-size: clamp(13px, 3.4vmin, 17px);
+  transition: transform 0.15s ease;
+}
+#hud-combo.bump {
+  transform: scale(1.25);
+}
+#hud-ember {
+  color: var(--ember);
+}
+#hud-prism {
+  color: var(--prism);
+}
+.hud-right {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+.hud-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+/* Overdrive button */
+#od-btn {
+  position: absolute;
+  right: calc(18px + var(--sar));
+  bottom: calc(26px + var(--sab));
+  width: clamp(64px, 17vmin, 92px);
+  height: clamp(64px, 17vmin, 92px);
+  border-radius: 50%;
+  border: 3px solid rgba(255, 201, 77, 0.35);
+  background: radial-gradient(circle at 50% 38%, rgba(80, 48, 10, 0.92), rgba(30, 16, 4, 0.92));
+  color: var(--ember);
+  font-size: clamp(10px, 2.6vmin, 13px);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  animation: none;
+  pointer-events: auto;
+}
+#od-btn .flame {
+  font-size: 1.9em;
+  filter: grayscale(1) brightness(0.7);
+}
+#od-btn.ready {
+  border-color: var(--ember);
+  box-shadow: 0 0 24px rgba(255, 168, 38, 0.6);
+  animation: pulse 1s ease-in-out infinite;
+}
+#od-btn.ready .flame {
+  filter: none;
+}
+#od-btn.active {
+  border-color: #fff;
+  box-shadow: 0 0 34px rgba(255, 220, 120, 0.9);
+}
+#od-ring {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Power-up indicators */
+#powerup-row {
+  position: absolute;
+  left: calc(18px + var(--sal));
+  bottom: calc(30px + var(--sab));
+  display: flex;
+  gap: 8px;
+}
+.pu-chip {
+  background: var(--panel);
+  border: 1px solid var(--safe);
+  color: var(--safe);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: clamp(12px, 3vmin, 15px);
+  font-weight: 800;
+}
+
+/* Floating skill labels */
+#skill-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 34%;
+  text-align: center;
+  font-size: clamp(20px, 5.6vmin, 32px);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: var(--ember);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  transform: translateY(8px) scale(0.9);
+}
+#skill-label.pop {
+  animation: skillpop 0.9s ease forwards;
+}
+#skill-label.nearmiss {
+  color: var(--safe);
+}
+#skill-label.tier {
+  color: #fff;
+}
+@keyframes skillpop {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.85);
+  }
+  18% {
+    opacity: 1;
+    transform: translateY(0) scale(1.06);
+  }
+  30% {
+    transform: scale(1);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.96);
+  }
+}
+
+/* Tutorial prompt */
+#tut-prompt {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 24%;
+  text-align: center;
+  font-size: clamp(17px, 4.6vmin, 24px);
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+#tut-prompt.show {
+  opacity: 1;
+}
+#tut-prompt .big {
+  font-size: 1.7em;
+  display: block;
+}
+
+/* Damage / chase vignette */
+#vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 rgba(0, 0, 0, 0);
+  transition: box-shadow 0.3s ease;
+}
+#flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--hazard);
+  opacity: 0;
+}
+#flash.hit {
+  animation: hitflash 0.4s ease;
+}
+@keyframes hitflash {
+  0% {
+    opacity: 0.35;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+#flash.gold {
+  background: var(--ember);
+}
+
+/* --- Results --- */
+#results {
+  background: rgba(8, 4, 2, 0.72);
+  backdrop-filter: blur(3px);
+}
+.results-title {
+  font-size: clamp(24px, 6.5vmin, 40px);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: var(--hazard);
+}
+.results-title.best {
+  color: var(--ember);
+}
+.results-score {
+  font-size: clamp(42px, 11vmin, 72px);
+  font-weight: 900;
+  color: var(--ink);
+  text-shadow: 0 0 30px rgba(255, 168, 38, 0.35);
+  line-height: 1;
+}
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 160px));
+  gap: 8px;
+}
+.newbest {
+  color: var(--safe);
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  font-size: clamp(14px, 3.6vmin, 18px);
+  animation: pulse 1s infinite;
+}
+
+/* --- Pause + settings --- */
+#pause,
+#settings {
+  background: rgba(6, 3, 1, 0.78);
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: 18px;
+  padding: 22px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: stretch;
+  min-width: min(320px, 84vw);
+  box-shadow: var(--shadow);
+}
+.panel h2 {
+  text-align: center;
+  letter-spacing: 0.12em;
+  color: var(--ember);
+  font-size: clamp(18px, 5vmin, 24px);
+}
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  font-weight: 700;
+}
+.toggle-row button {
+  min-width: 74px;
+  padding: 8px 12px;
+}
+.toggle-row button.off {
+  opacity: 0.45;
+}
+
+/* Landscape tweaks */
+@media (orientation: landscape) and (max-height: 500px) {
+  #menu .logo {
+    top: calc(2vh + var(--sat));
+  }
+  #menu {
+    padding-bottom: calc(3vh + var(--sab));
+  }
+  .results-score {
+    font-size: clamp(32px, 9vmin, 52px);
+  }
+  .screen {
+    gap: 8px;
+  }
+}
