@@ -36,7 +36,7 @@ export const TUNING = {
     laneSwitchCooldown: 0.10,
     jumpHeight: 2.1,
     jumpTime: 0.62,         // total airborne time at base speed
-    duckTime: 0.55,         // how long a duck holds
+    duckTime: 0.7,          // how long a duck holds (generous so timing is forgiving)
     inputBufferTime: 0.18,  // early-press buffer window
     leanMax: 0.32,          // radians of cart lean during switch
     crashSpinTime: 1.1,

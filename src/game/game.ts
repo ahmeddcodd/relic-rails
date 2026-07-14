@@ -17,6 +17,7 @@ import { ObstacleManager, CollectibleManager, OBSTACLE_SPECS, type PowerupKind }
 import { CartController } from './cart';
 import { CameraRig } from './camera';
 import { Director, validatePlan } from './director';
+import { ForkVisual } from './fork';
 import { ScoreSystem, OverdriveSystem, PowerUpSystem, ChaseSystem, COMBO_NAMES } from './systems';
 import { UI, rankFor } from '../ui/ui';
 
@@ -24,6 +25,8 @@ type State = 'loading' | 'menu' | 'running' | 'crashing' | 'results';
 
 const tmpV = new THREE.Vector3();
 const DEV = import.meta.env.DEV;
+const FORK_REVEAL_DIST = 80; // metres before the split that both branches appear
+const FORK_COMMIT_LEAD = 15; // metres before the split that the choice locks in
 
 export class Game {
   private bridge: PlatformBridge;
@@ -42,6 +45,7 @@ export class Game {
   private cart: CartController;
   private camera: CameraRig;
   private chase: ChaseSystem;
+  private forkVisual!: ForkVisual;
   private score = new ScoreSystem();
   private od = new OverdriveSystem();
   private pu = new PowerUpSystem();
@@ -63,6 +67,8 @@ export class Game {
   private tutorialStep = 0;
   private menuOrbit = 0;
   private validateTimer = 0;
+  private forkShown = false;
+  private lastForkSide: -1 | 1 = -1;
 
   constructor(canvas: HTMLCanvasElement) {
     this.bridge = createBridge();
@@ -76,6 +82,7 @@ export class Game {
     this.director = new Director(this.path, this.obstacles, this.collectibles);
     this.view = new TrackView(this.path, this.gfx.scene, this.director.biomeAt, this.gfx.quality);
     this.chase = new ChaseSystem(this.path, this.gfx.scene);
+    this.forkVisual = new ForkVisual(this.path, this.gfx.scene);
     this.cart = new CartController(this.path, this.gfx.scene, {
       onSwitch: (dir) => {
         this.lastSwitchAt = performance.now() / 1000;
@@ -210,6 +217,8 @@ export class Game {
     this.od.reset();
     this.pu.reset();
     this.chase.reset();
+    this.forkVisual.reset();
+    this.forkShown = false;
     this.particles.clear();
     this.biomeIdx = 0;
     this.gfx.setBiome(BIOMES[0], true);
@@ -352,11 +361,34 @@ export class Game {
       }
     }
 
+    // Fork: reveal the split as it nears, then lock in the player's chosen side
+    // BEFORE director.update so the path branches this same frame.
+    if (this.director.forkPending) {
+      const j = this.director.forkDist;
+      if (!this.forkShown && this.cart.dist > j - FORK_REVEAL_DIST) {
+        this.forkShown = true;
+        this.forkVisual.showSplit(j, BIOMES[this.director.biomeAt(j)].wall);
+        this.ui.skillLabel('CHOOSE A PATH', 'tier');
+        this.audio.powerup();
+      }
+      if (this.cart.dist > j - FORK_COMMIT_LEAD) {
+        const lane = this.cart.laneIdx;
+        const side: -1 | 1 = lane === 0 ? -1 : lane === 2 ? 1 : this.lastForkSide;
+        this.lastForkSide = side;
+        this.director.commitFork(side);
+        this.forkVisual.commit(side);
+        this.forkShown = false;
+        this.audio.switch();
+        this.haptic(18);
+      }
+    }
+
     // Systems
     this.director.update(dt, this.cart.dist);
     this.cart.targetSpeed = this.director.targetSpeed;
     this.cart.update(dt);
     this.view.update(this.cart.dist);
+    this.forkVisual.update(this.cart.dist);
     this.obstacles.update(dt, this.cart.dist);
     this.pu.update(dt);
     if (this.od.update(dt)) {
@@ -514,11 +546,14 @@ export class Game {
       const sameLane = Math.abs(laneLat - this.cart.lateral) < 1.35;
 
       if (overlap && sameLane) {
-        // Is the cart clearing it?
+        // Is the cart clearing it? A jump obstacle is cleared whenever the cart
+        // is airborne across the overlap (runner-standard) — being mid-jump over
+        // the obstacle IS the clear, so a well-timed swipe never clips on the
+        // rise or the descent. Landing on it (grounded mid-overlap) still fails.
         const cleared =
-          (spec.action === 'jump' && this.cart.y >= spec.clearHeight) ||
+          (spec.action === 'jump' && this.cart.airborne) ||
           (spec.action === 'duck' && this.cart.ducking) ||
-          (spec.action === 'none' && this.cart.y >= spec.clearHeight);
+          (spec.action === 'none' && (this.cart.airborne || this.cart.y >= spec.clearHeight));
         if (!cleared) {
           // Ghost wheels phase through gaps/debris; overdrive shreds debris.
           const ghosted = this.pu.ghost && (o.type === 'gap' || o.type === 'debris');

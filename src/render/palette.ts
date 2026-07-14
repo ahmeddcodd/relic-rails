@@ -25,9 +25,26 @@ export interface BiomePalette {
   hasCeiling: boolean;
 }
 
+// Biome order = play order. Dark Crystal Hollow opens the run; the red-hot
+// Ember Forge is the climax finale. (Reordered per design: dark first, red last.)
 export const BIOMES: BiomePalette[] = [
   {
-    // 0 — Timber Maw Mine: warm torchlit timber tunnel
+    // 0 — Crystal Hollow: dark mineral cavern, cyan/violet glow (the "dark zone")
+    // Opener + tutorial zone, so lit a touch brighter than a mid-run cavern.
+    name: 'Crystal Hollow',
+    fog: 0x140c28, fogNear: 0.22, fogFar: 124,
+    sky: 0x0d0820,
+    hemiSky: 0x8f74ff, hemiGround: 0x120d24,
+    keyLight: 0xb0c4ff, keyIntensity: 2.1,
+    ground: 0x453c72, groundAlt: 0x38305c,
+    wall: 0x554a86, wallAlt: 0x433870,
+    ceiling: 0x211a3a,
+    propA: 0x54e8e0, propB: 0xb46cff,
+    emissive: 0x64f0e8,
+    hasCeiling: true,
+  },
+  {
+    // 1 — Timber Maw Mine: warm torchlit timber tunnel
     name: 'Timber Maw Mine',
     fog: 0x2a1608, fogNear: 0.25, fogFar: 105,
     sky: 0x1a0d05,
@@ -41,7 +58,7 @@ export const BIOMES: BiomePalette[] = [
     hasCeiling: true,
   },
   {
-    // 1 — Flooded Ravine: open sunset gorge, waterfalls
+    // 2 — Flooded Ravine: open sunset gorge, waterfalls (bright relief)
     name: 'Flooded Ravine',
     fog: 0xe8935e, fogNear: 0.35, fogFar: 150,
     sky: 0xff9e63,
@@ -55,21 +72,7 @@ export const BIOMES: BiomePalette[] = [
     hasCeiling: false,
   },
   {
-    // 2 — Crystal Hollow: dark mineral cavern, cyan/violet glow
-    name: 'Crystal Hollow',
-    fog: 0x120a24, fogNear: 0.22, fogFar: 115,
-    sky: 0x0b0618,
-    hemiSky: 0x7a5cff, hemiGround: 0x0e0a1e,
-    keyLight: 0x9fb8ff, keyIntensity: 1.7,
-    ground: 0x3d3560, groundAlt: 0x322a4d,
-    wall: 0x4a3f72, wallAlt: 0x3a3060,
-    ceiling: 0x1b1530,
-    propA: 0x54e8e0, propB: 0xb46cff,
-    emissive: 0x64f0e8,
-    hasCeiling: true,
-  },
-  {
-    // 3 — Ember Forge: blackened iron and magma
+    // 3 — Ember Forge: blackened iron and magma (the "red zone" — finale)
     name: 'Ember Forge',
     fog: 0x330d02, fogNear: 0.22, fogFar: 110,
     sky: 0x1c0602,

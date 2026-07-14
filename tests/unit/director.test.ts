@@ -14,15 +14,21 @@ function generate(seed: number, metres: number) {
   const collectibles = new CollectibleManager(path, scene);
   const director = new Director(path, obstacles, collectibles);
   director.reset(seed, false);
-  // Simulate a run advancing through the content without rendering.
+  // Simulate a run advancing through the content without rendering. Forks halt
+  // generation until the player commits a side; mirror that here so content
+  // keeps flowing (alternate the choice deterministically).
   let dist = 0;
   let time = 0;
+  let forks = 0;
   while (dist < metres) {
+    if (director.forkPending && dist > director.forkDist - 15) {
+      director.commitFork(forks++ % 2 === 0 ? -1 : 1);
+    }
     director.update(0.5, dist);
     dist += director.targetSpeed * 0.5;
     time += 0.5;
   }
-  return { director, obstacles, time };
+  return { director, obstacles, time, forks };
 }
 
 describe('DifficultyDirector fairness', () => {
@@ -43,6 +49,11 @@ describe('DifficultyDirector fairness', () => {
     const { director } = generate(7, 3000);
     expect(director.plan.length).toBeGreaterThan(30);
     expect(director.phase).toBeGreaterThanOrEqual(3);
+  });
+
+  it('spawns forks over a long run', () => {
+    const { forks } = generate(7, 3000);
+    expect(forks).toBeGreaterThanOrEqual(4);
   });
 
   it('track path stays generated ahead', () => {

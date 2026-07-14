@@ -55,9 +55,29 @@ One interface, two implementations (local mock / YouTube). `firstFrameReady` /
 `gameReady` are idempotent. Pause/resume only via SDK callbacks; local dev mirrors
 with `visibilitychange`. Audio enablement is polled once and subscribed.
 
+## Junction forks — delayed path commit (Temple-Run split)
+The single-polyline model can't pre-generate past a choice the player hasn't made
+yet, so the director HALTS path + content generation at the split (`forkDist`) once
+a fork is scheduled. `TrackView` naturally stops building chunks there, and fog +
+the two diverging tunnel-mouth stubs (`ForkVisual`) make "the road ends in two
+choices" read cleanly. The game reveals both branches ~80 m out, then ~15 m out
+reads the cart's lane and calls `director.commitFork(side)`, which appends a curve
+module in that direction and resumes generation — so the whole world turns the way
+you chose, in the same frame, with no visible gap (verified: 0 teleports / 0 path
+halts across 4 forks over 2.2 km). Center-lane / no-input defaults to the last side
+(fairness rule "valid default route"). No hazard pattern can spill onto the
+ungenerated branch: the 55 m approach guard exceeds any single pattern's span and
+only short `patSingle` patterns run inside it.
+
+## Jump clearance — airborne, not per-frame height
+A jump obstacle is cleared whenever the cart is **airborne** during the overlap, not
+when `y >= clearHeight` on every overlapping frame (which made a well-centred jump
+clip on the rise/descent, since the ~3.7 m overlap window is wider than the tight
+height band). Landing on the obstacle (grounded mid-overlap) still fails. This is the
+runner-standard feel and made jumps reliable in testing.
+
 ## Deliberate deferrals (documented, not forgotten)
-- **Junction forks / balance sections** — branching track breaks the single-polyline
-  model; needs a two-path blend window. Deferred to keep the core loop shippable.
+- **Single-rail balance sections** — needs a distinct control mode; deferred.
 - **Contracts/missions, cosmetic cart unlocks, relic gallery** — save schema has room
   (version bump + migration path proven by tests); menu keeps rank + totals for now.
 - **Post-processing stack (bloom/vignette)** — the art direction reads well without

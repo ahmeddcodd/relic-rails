@@ -24,11 +24,12 @@ const PHASE_SPEEDS = [
   TUNING.speed.phase5,
 ];
 
+// Index order matches BIOMES in palette.ts (dark Crystal first, red Forge last).
 const BIOME_OBSTACLES: ObstacleType[][] = [
-  ['blocker', 'beam', 'rocks', 'gap', 'oncoming'], // Timber Maw Mine
-  ['gap', 'rocks', 'blocker', 'oncoming', 'beam'], // Flooded Ravine
-  ['spikes', 'blocker', 'gate', 'gap', 'beam'], // Crystal Hollow
-  ['fire', 'gate', 'blocker', 'gap', 'oncoming'], // Ember Forge
+  ['spikes', 'blocker', 'gate', 'gap', 'beam'], // 0 Crystal Hollow
+  ['blocker', 'beam', 'rocks', 'gap', 'oncoming'], // 1 Timber Maw Mine
+  ['gap', 'rocks', 'blocker', 'oncoming', 'beam'], // 2 Flooded Ravine
+  ['fire', 'gate', 'blocker', 'gap', 'oncoming'], // 3 Ember Forge
 ];
 
 const POWERUP_ROTATION: PowerupKind[] = ['magnet', 'shield', 'frenzy', 'ghost', 'repair'];
@@ -53,6 +54,14 @@ export class Director {
   /** dev/testing: record of required actions for validation */
   plan: PlacedAction[] = [];
 
+  // --- fork (Temple-Run-style branching) state ---
+  /** true while a fork is placed ahead but the player has not committed a side. */
+  forkPending = false;
+  /** distance of the split point; path generation halts here until commit. */
+  forkDist = 0;
+  private forkApproachDone = false;
+  private nextForkAt = 300;
+
   phase = 0;
 
   constructor(
@@ -72,6 +81,10 @@ export class Director {
     this.powerupIdx = 0;
     this.nextPowerupAt = 260;
     this.tutorial = tutorial;
+    this.forkPending = false;
+    this.forkDist = 0;
+    this.forkApproachDone = false;
+    this.nextForkAt = tutorial ? 520 : 300; // first fork only after the basics land
     this.plan.length = 0;
   }
 
@@ -101,16 +114,69 @@ export class Director {
       }
     }
 
-    // Keep the geometric path generated ahead.
-    while (this.path.queuedLength() + this.path.headDist < cartDist + TUNING.track.aheadDist + 80) {
+    // Keep the geometric path generated ahead — but STOP at a pending fork.
+    // The path cannot branch until the player commits a side, so once a fork is
+    // scheduled we queue nothing past it; head halts at forkDist and the split
+    // visual + fog make that a readable "the road ends in two choices" moment.
+    while (
+      !this.forkPending &&
+      this.path.queuedLength() + this.path.headDist < cartDist + TUNING.track.aheadDist + 80
+    ) {
+      const queuedEnd = this.path.headDist + this.path.queuedLength();
+      if (this.canForkAt(queuedEnd)) {
+        this.scheduleFork(queuedEnd);
+        break;
+      }
       this.pushTrackModule();
     }
     this.path.ensure(cartDist + TUNING.track.aheadDist);
 
-    // Keep content generated ahead.
+    // Keep content generated ahead (also halts at a pending fork).
     while (this.genDist < cartDist + TUNING.track.aheadDist - 40) {
+      if (this.forkPending && this.genDist >= this.forkDist) break;
       this.generateNext();
     }
+  }
+
+  // --- forks ----------------------------------------------------------------
+  private canForkAt(dist: number): boolean {
+    return (
+      !this.tutorial &&
+      this.runTime >= 6 && // let the player settle before the first split
+      dist >= this.nextForkAt &&
+      !this.inTransition(dist) &&
+      !this.inTransition(dist + 60) && // keep the whole branch out of a biome gate
+      this.biomeAt(dist) === this.biomeAt(dist + 70) // don't fork across a biome
+    );
+  }
+
+  private scheduleFork(atLeast: number): void {
+    // Give a straight lead-in so the player runs squarely into the split.
+    this.path.pushModule({ len: 34, curve: 0, slope: 0 });
+    this.forkDist = this.path.headDist + this.path.queuedLength();
+    this.forkPending = true;
+    this.forkApproachDone = false;
+    void atLeast;
+  }
+
+  /** Commit the branch the player chose. side: -1 = left, +1 = right. */
+  commitFork(side: -1 | 1): void {
+    if (!this.forkPending) return;
+    this.forkPending = false;
+    // The whole world turns toward the chosen side, then straightens out.
+    this.path.pushModule({ len: 52, curve: 0.62 * side, slope: 0 });
+    this.path.pushModule({ len: 26, curve: 0, slope: 0 });
+    this.nextForkAt = this.forkDist + this.rand.range(340, 520);
+    // Resume content generation from the fork point onward.
+    this.genDist = this.forkDist;
+  }
+
+  /** Split shard trail guiding the player toward either lane before the fork. */
+  private generateForkApproach(): void {
+    const j = this.forkDist;
+    this.trailFlat(j - 40, 1, 3, 2.6); // run in centred
+    this.trailCurve(j - 28, 1, 0, 6, 2.4); // peel left
+    this.trailCurve(j - 28, 1, 2, 6, 2.4); // peel right
   }
 
   private pushTrackModule(): void {
@@ -134,6 +200,18 @@ export class Director {
 
   // --- content -------------------------------------------------------------
   private generateNext(): void {
+    // Approaching a pending fork: lay the split telegraph once, then park
+    // content at the split (nothing is generated past it until commit). The
+    // 55 m guard exceeds any single pattern's span, so no hazard can spill onto
+    // the not-yet-generated branch.
+    if (this.forkPending && this.genDist >= this.forkDist - 55) {
+      if (!this.forkApproachDone) {
+        this.generateForkApproach();
+        this.forkApproachDone = true;
+      }
+      this.genDist = this.forkDist;
+      return;
+    }
     if (this.tutorial && this.genDist < 10) {
       this.generateTutorial();
       return;
@@ -166,6 +244,12 @@ export class Director {
       return;
     }
     this.patternsSinceRecovery++;
+    // Within a fork's approach corridor, only short single patterns run so the
+    // last hazard always lands clear of the split.
+    if (this.forkPending) {
+      this.patSingle();
+      return;
+    }
     const pattern = this.pickPattern();
     pattern();
   }

@@ -14,8 +14,15 @@
   rules + validator (unit-tested across seeds), recovery pacing, combo tiers x1–x5,
   Perfect/Near-miss detection, Sunheart Overdrive, Iron Maw chase pressure (visible
   guardian, catch ending), 5 power-ups (magnet/shield/ghost/frenzy/repair).
-- Phase 5 — 4 biomes reachable in sequence with transition breathers; biome-specific
-  obstacle pools (9 obstacle types).
+- Phase 5 — 4 biomes reachable in sequence (Crystal Hollow → Timber Maw Mine →
+  Flooded Ravine → Ember Forge: dark opener, red-hot finale) with transition
+  breathers; biome-specific obstacle pools (9 obstacle types).
+- Temple-Run-style **junction forks**: the track halts at a split, reveals two
+  diverging tunnels ~80 m out, and branches toward the lane the player commits to
+  (~15 m out); the whole world turns that way and the unchosen branch peels into
+  the fog. First fork ~465 m, then every ~340–520 m. Fairness-safe: straight
+  lead-in, split shard telegraph, valid default on no input, no hazards on the
+  ungenerated branch.
 - Phase 6 (partial) — ranks (8 tiers), persistent totals, settings (music/sfx/haptics/
   reduced fx), versioned + migration-tested save.
 - Phase 7 — SDK lifecycle: firstFrameReady → loadData → gameReady ordering, pause/
@@ -33,7 +40,7 @@ rank promotion; tutorial prompts; autopilot soak (4+ consecutive auto-restarted 
 no errors); all 4 biomes; portrait 375×812 and desktop framing.
 
 ## Deferred (see TECHNICAL_DECISIONS.md)
-- Junction forks + single-rail balance sections.
+- Single-rail balance sections.
 - Contracts/missions, cosmetic cart/outfit unlocks, relic-fragment collection.
 - Post-processing pass; landmark set pieces; haptic patterns beyond basic pulses.
 - E2E test harness (manual + scripted-eval coverage exists; no automated e2e yet).

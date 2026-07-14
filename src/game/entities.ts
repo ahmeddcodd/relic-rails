@@ -43,16 +43,18 @@ export interface ObstacleSpec {
   build: () => THREE.Group;
 }
 
+// clearHeight = cart height (m) needed to pass a jump obstacle. Kept generous
+// so a slightly-early or slightly-late swipe still clears — jumps feel reliable.
 export const OBSTACLE_SPECS: Record<ObstacleType, ObstacleSpec> = {
   blocker: { action: 'switch', major: true, halfLen: 1.1, clearHeight: 99, build: buildBlockerCart },
-  gap: { action: 'jump', major: true, halfLen: 1.6, clearHeight: 0.7, build: buildBrokenRail },
+  gap: { action: 'jump', major: true, halfLen: 1.6, clearHeight: 0.55, build: buildBrokenRail },
   beam: { action: 'duck', major: true, halfLen: 0.5, clearHeight: 99, build: buildLowBeam },
   gate: { action: 'duck', major: true, halfLen: 0.5, clearHeight: 99, build: buildGate },
-  rocks: { action: 'jump', major: true, halfLen: 0.9, clearHeight: 1.1, build: buildRockPile },
+  rocks: { action: 'jump', major: true, halfLen: 0.9, clearHeight: 0.9, build: buildRockPile },
   oncoming: { action: 'switch', major: true, halfLen: 1.2, clearHeight: 99, build: buildOncomingCart },
   fire: { action: 'switch', major: true, halfLen: 0.8, clearHeight: 99, build: buildFireJet },
-  spikes: { action: 'jump', major: true, halfLen: 0.9, clearHeight: 1.2, build: buildCrystalSpikes },
-  debris: { action: 'none', major: false, halfLen: 0.6, clearHeight: 0.6, build: buildDebris },
+  spikes: { action: 'jump', major: true, halfLen: 0.9, clearHeight: 1.0, build: buildCrystalSpikes },
+  debris: { action: 'none', major: false, halfLen: 0.6, clearHeight: 0.55, build: buildDebris },
 };
 
 export interface Obstacle {
