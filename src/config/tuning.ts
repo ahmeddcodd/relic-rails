@@ -28,6 +28,7 @@ export const TUNING = {
     rampTime: 22,           // seconds to blend between phase targets
     minorHitLoss: 0.35,     // fraction of speed lost on a minor hit
     recoverTime: 2.2,       // seconds to regain speed after minor hit
+    mercyTime: 0.45,        // brief i-frames after a stumble (co-located hazards only, never phases a wall)
   },
 
   // --- Cart handling ---

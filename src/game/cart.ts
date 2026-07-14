@@ -157,7 +157,7 @@ export class CartController {
   }
 
   get invulnerable(): boolean {
-    return this.stumbleT > TUNING.speed.recoverTime - 1.0;
+    return this.stumbleT > TUNING.speed.recoverTime - TUNING.speed.mercyTime;
   }
 
   update(dt: number): void {

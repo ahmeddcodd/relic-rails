@@ -25,7 +25,7 @@ type State = 'loading' | 'menu' | 'running' | 'crashing' | 'results';
 
 const tmpV = new THREE.Vector3();
 const DEV = import.meta.env.DEV;
-const FORK_REVEAL_DIST = 80; // metres before the split that both branches appear
+const FORK_REVEAL_DIST = 100; // metres before the split that both branches appear
 const FORK_COMMIT_LEAD = 15; // metres before the split that the choice locks in
 
 export class Game {
@@ -219,6 +219,7 @@ export class Game {
     this.chase.reset();
     this.forkVisual.reset();
     this.forkShown = false;
+    this.ui.tutorialPrompt(null);
     this.particles.clear();
     this.biomeIdx = 0;
     this.gfx.setBiome(BIOMES[0], true);
@@ -369,7 +370,7 @@ export class Game {
       if (!this.forkShown && this.cart.dist > j - FORK_REVEAL_DIST) {
         this.forkShown = true;
         this.forkVisual.showSplit(j, BIOMES[this.director.biomeAt(j)].wall);
-        this.ui.skillLabel('CHOOSE A PATH', 'tier');
+        this.ui.tutorialPrompt('<span class="big">◀   ▶</span>PICK A PATH — swipe left or right');
         this.audio.powerup();
       }
       if (this.cart.dist > j - FORK_COMMIT_LEAD) {
@@ -379,6 +380,8 @@ export class Game {
         this.director.commitFork(side);
         this.forkVisual.commit(side);
         this.forkShown = false;
+        this.ui.tutorialPrompt(null);
+        this.ui.skillLabel(side < 0 ? 'LEFT PATH!' : 'RIGHT PATH!', 'tier');
         this.audio.switch();
         this.haptic(18);
       }
@@ -560,6 +563,14 @@ export class Game {
           const ghosted = this.pu.ghost && (o.type === 'gap' || o.type === 'debris');
           const shredded = this.od.active && !spec.major;
           if (ghosted) continue;
+          // Brief post-stumble mercy: CONSUME a co-located hazard (so it can't be
+          // mis-scored as "passed") without a second hit. The window is short
+          // (TUNING.speed.mercyTime) so it only ever spares a hazard essentially
+          // on top of the stumble — never lets the cart phase a separate wall.
+          if (this.cart.invulnerable) {
+            o.resolved = true;
+            continue;
+          }
           if (shredded) {
             o.resolved = true;
             this.smashObstacle(o.dist, laneLat);
@@ -576,7 +587,6 @@ export class Game {
             this.minorHit(o.dist, laneLat);
             continue;
           }
-          if (this.cart.invulnerable) continue;
           if (this.pu.shield) {
             this.pu.shield = false;
             this.cart.model.shield.visible = false;
@@ -672,6 +682,7 @@ export class Game {
   private startCrash(): void {
     this.state = 'crashing';
     this.crashTimer = 0;
+    this.ui.tutorialPrompt(null); // clear any fork prompt if we die mid-approach
     this.cart.startCrash();
     this.score.majorHit();
     this.audio.crash();
