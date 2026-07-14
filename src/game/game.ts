@@ -326,6 +326,7 @@ export class Game {
         break;
     }
 
+    this.gfx.syncSize();
     this.gfx.update(dt);
     this.particles.update(dt);
     this.gfx.render();

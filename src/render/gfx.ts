@@ -83,9 +83,28 @@ export class Gfx {
   /** Resize to CSS size of the canvas parent. Never resets game state. */
   resize(w: number, h: number): void {
     if (w <= 0 || h <= 0) return;
+    this.lastW = w;
+    this.lastH = h;
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
+  }
+
+  private lastW = 0;
+  private lastH = 0;
+
+  /**
+   * Resize-on-demand: called every frame. Guarantees the drawing buffer matches
+   * the displayed CSS size regardless of ResizeObserver timing (which never
+   * fires on a non-painting tab), covering first-frame sizing + orientation.
+   */
+  syncSize(): void {
+    const c = this.renderer.domElement;
+    const w = c.clientWidth || window.innerWidth;
+    const h = c.clientHeight || window.innerHeight;
+    if (w > 0 && h > 0 && (w !== this.lastW || h !== this.lastH)) {
+      this.resize(w, h);
+    }
   }
 
   /** Switch lighting/fog targets to a biome; blended per-frame in update(). */
