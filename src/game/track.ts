@@ -535,8 +535,8 @@ export class TrackView {
           w.box(m, lat, 5.0, 0, 1.9, 1.7, 1.9, green);
         }
       }
-      // Mist motes
-      if (dense) glowAt(start + rand.range(4, 28), rand.range(-9, 9), rand.range(5, 8), 0.16, 0x9fd8ff);
+      // (No floating sky motes here — a glowing octahedron over the track reads
+      // as an unreachable shard. Atmosphere comes from the cliffs/trees instead.)
     } else if (biomeName === 'Crystal Hollow') {
       // Crystal clusters — the glow instances ARE the crystals
       const n = dense ? 7 : 5;
@@ -552,8 +552,8 @@ export class TrackView {
         const side = rand.chance(0.5) ? -1 : 1;
         w.box(m, side * rand.range(6.6, 8.4), 0.5, 0, 1.6, rand.range(1, 2.2), 1.6, new THREE.Color(0x241e3a));
       }
-      // Floating motes
-      if (dense) glowAt(start + rand.range(4, 28), rand.range(-5, 5), rand.range(6, 9), 0.12, 0x64f0e8);
+      // (No over-track floating motes — same shard-lookalike confusion; the
+      // wall crystals above provide the cavern glow.)
     } else {
       // Ember Forge: pipes, ducts, vents, warning lamps
       for (const off of [6, 22]) {
