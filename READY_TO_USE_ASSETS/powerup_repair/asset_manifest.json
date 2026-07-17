@@ -1,0 +1,76 @@
+{
+  "assetId": "powerup_repair",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "powerup",
+  "description": "Readable low-poly repair power-up with a shared mint pickup ring.",
+  "files": {
+    "runtime": "powerup_repair.glb",
+    "source": "powerup_repair.blend",
+    "preview": "powerup_repair_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "lane centre, root at ground; visible core centred at 1 m",
+  "boundsBlenderMetres": {
+    "min": [
+      -0.2209,
+      -0.5931,
+      0.4199
+    ],
+    "max": [
+      0.2209,
+      0.5931,
+      1.5801
+    ],
+    "size": [
+      0.4419,
+      1.1862,
+      1.1602
+    ]
+  },
+  "performance": {
+    "triangles": 272,
+    "sourceVertices": 142,
+    "meshPrimitives": 4,
+    "materials": 2,
+    "glbBytes": 27528,
+    "triangleBudget": 1800
+  },
+  "meshes": [
+    "ANIM_pickup_ring",
+    "ANIM_repair_core",
+    "ANIM_repair_cross_v",
+    "ANIM_repair_cross_h"
+  ],
+  "materials": [
+    "MAT_Iron",
+    "MAT_Mint"
+  ],
+  "sockets": [],
+  "animation": {
+    "fps": 30,
+    "library": "powerup_repair_action_library",
+    "clips": [
+      {
+        "name": "pickup_loop",
+        "start": 1,
+        "end": 60,
+        "loop": true,
+        "description": "Shared two-second bob and spin cadence used by every power-up."
+      }
+    ]
+  },
+  "runtimeNotes": [
+    "Runtime magnet attraction may override root position.",
+    "All power-ups use identical loop timing for visual consistency."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

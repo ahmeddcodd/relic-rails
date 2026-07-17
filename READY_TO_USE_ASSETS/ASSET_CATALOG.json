@@ -1,0 +1,409 @@
+{
+  "game": "Relic Rails: Abyss Run",
+  "version": "1.0.0",
+  "assetCount": 35,
+  "assets": [
+    {
+      "assetId": "blocker_cart",
+      "category": "obstacle",
+      "folder": "blocker_cart",
+      "runtime": "blocker_cart.glb",
+      "triangles": 380,
+      "glbBytes": 32148,
+      "animationClips": [],
+      "validation": true
+    },
+    {
+      "assetId": "broken_rail",
+      "category": "obstacle",
+      "folder": "broken_rail",
+      "runtime": "broken_rail.glb",
+      "triangles": 292,
+      "glbBytes": 23864,
+      "animationClips": [],
+      "validation": true
+    },
+    {
+      "assetId": "crystal_cavern_platform",
+      "category": "environment_modular_track_platform",
+      "folder": "crystal_cavern_platform",
+      "runtime": "crystal_cavern_platform.glb",
+      "triangles": 1840,
+      "glbBytes": 152996,
+      "animationClips": [],
+      "validation": true
+    },
+    {
+      "assetId": "crystal_cluster_large",
+      "category": "environment_prop",
+      "folder": "crystal_cluster_large",
+      "runtime": "crystal_cluster_large.glb",
+      "triangles": 120,
+      "glbBytes": 13464,
+      "animationClips": [],
+      "validation": true
+    },
+    {
+      "assetId": "crystal_cluster_small",
+      "category": "environment_prop",
+      "folder": "crystal_cluster_small",
+      "runtime": "crystal_cluster_small.glb",
+      "triangles": 120,
+      "glbBytes": 13412,
+      "animationClips": [],
+      "validation": true
+    },
+    {
+      "assetId": "crystal_spikes",
+      "category": "obstacle",
+      "folder": "crystal_spikes",
+      "runtime": "crystal_spikes.glb",
+      "triangles": 104,
+      "glbBytes": 11612,
+      "animationClips": [],
+      "validation": true
+    },
+    {
+      "assetId": "debris_cluster",
+      "category": "obstacle",
+      "folder": "debris_cluster",
+      "runtime": "debris_cluster.glb",
+      "triangles": 136,
+      "glbBytes": 14504,
+      "animationClips": [],
+      "validation": true
+    },
+    {
+      "assetId": "ember_forge_platform",
+      "category": "environment_modular_track_platform",
+      "folder": "ember_forge_platform",
+      "runtime": "ember_forge_platform.glb",
+      "triangles": 2112,
+      "glbBytes": 168116,
+      "animationClips": [],
+      "validation": true
+    },
+    {
+      "assetId": "ember_shard",
+      "category": "collectible",
+      "folder": "ember_shard",
+      "runtime": "ember_shard.glb",
+      "triangles": 8,
+      "glbBytes": 4904,
+      "animationClips": [
+        "collectible_loop"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "fire_jet",
+      "category": "obstacle",
+      "folder": "fire_jet",
+      "runtime": "fire_jet.glb",
+      "triangles": 312,
+      "glbBytes": 28640,
+      "animationClips": [
+        "flame_loop",
+        "burst"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "flooded_ravine_platform",
+      "category": "environment_modular_track_platform",
+      "folder": "flooded_ravine_platform",
+      "runtime": "flooded_ravine_platform.glb",
+      "triangles": 1952,
+      "glbBytes": 155752,
+      "animationClips": [],
+      "validation": true
+    },
+    {
+      "assetId": "forge_gear",
+      "category": "environment_prop",
+      "folder": "forge_gear",
+      "runtime": "forge_gear.glb",
+      "triangles": 648,
+      "glbBytes": 57832,
+      "animationClips": [
+        "gear_spin_loop"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "forge_pipe",
+      "category": "environment_prop",
+      "folder": "forge_pipe",
+      "runtime": "forge_pipe.glb",
+      "triangles": 936,
+      "glbBytes": 67092,
+      "animationClips": [
+        "valve_vent_loop"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "iron_maw",
+      "category": "chase_guardian",
+      "folder": "iron_maw",
+      "runtime": "iron_maw.glb",
+      "triangles": 780,
+      "glbBytes": 82256,
+      "animationClips": [
+        "chase_loop",
+        "lunge",
+        "catch"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "low_beam",
+      "category": "obstacle",
+      "folder": "low_beam",
+      "runtime": "low_beam.glb",
+      "triangles": 284,
+      "glbBytes": 26216,
+      "animationClips": [
+        "chain_sway_loop"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "minecart_hero",
+      "category": "hero_vehicle",
+      "folder": "minecart_hero",
+      "runtime": "minecart_hero.glb",
+      "triangles": 1140,
+      "glbBytes": 98108,
+      "animationClips": [
+        "idle_loop",
+        "wheel_spin_loop",
+        "suspension_hit",
+        "crash"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "oncoming_cart",
+      "category": "obstacle",
+      "folder": "oncoming_cart",
+      "runtime": "oncoming_cart.glb",
+      "triangles": 400,
+      "glbBytes": 39224,
+      "animationClips": [
+        "approach_loop"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "portcullis_gate",
+      "category": "obstacle",
+      "folder": "portcullis_gate",
+      "runtime": "portcullis_gate.glb",
+      "triangles": 396,
+      "glbBytes": 37448,
+      "animationClips": [
+        "warning_shudder",
+        "lift_cycle"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "powerup_frenzy",
+      "category": "powerup",
+      "folder": "powerup_frenzy",
+      "runtime": "powerup_frenzy.glb",
+      "triangles": 212,
+      "glbBytes": 24716,
+      "animationClips": [
+        "pickup_loop"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "powerup_ghost",
+      "category": "powerup",
+      "folder": "powerup_ghost",
+      "runtime": "powerup_ghost.glb",
+      "triangles": 200,
+      "glbBytes": 24804,
+      "animationClips": [
+        "pickup_loop"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "powerup_magnet",
+      "category": "powerup",
+      "folder": "powerup_magnet",
+      "runtime": "powerup_magnet.glb",
+      "triangles": 360,
+      "glbBytes": 35956,
+      "animationClips": [
+        "pickup_loop"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "powerup_repair",
+      "category": "powerup",
+      "folder": "powerup_repair",
+      "runtime": "powerup_repair.glb",
+      "triangles": 272,
+      "glbBytes": 27528,
+      "animationClips": [
+        "pickup_loop"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "powerup_shield",
+      "category": "powerup",
+      "folder": "powerup_shield",
+      "runtime": "powerup_shield.glb",
+      "triangles": 204,
+      "glbBytes": 23252,
+      "animationClips": [
+        "pickup_loop"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "prism",
+      "category": "collectible",
+      "folder": "prism",
+      "runtime": "prism.glb",
+      "triangles": 116,
+      "glbBytes": 14628,
+      "animationClips": [
+        "collectible_loop"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "rail_ballast_cluster",
+      "category": "environment_prop",
+      "folder": "rail_ballast_cluster",
+      "runtime": "rail_ballast_cluster.glb",
+      "triangles": 232,
+      "glbBytes": 26600,
+      "animationClips": [],
+      "validation": true
+    },
+    {
+      "assetId": "ravine_tree",
+      "category": "environment_prop",
+      "folder": "ravine_tree",
+      "runtime": "ravine_tree.glb",
+      "triangles": 260,
+      "glbBytes": 31892,
+      "animationClips": [
+        "wind_sway_loop"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "rin_vale",
+      "category": "hero_character",
+      "folder": "rin_vale",
+      "runtime": "rin_vale.glb",
+      "triangles": 704,
+      "glbBytes": 124072,
+      "animationClips": [
+        "idle_cart",
+        "lean_left",
+        "lean_right",
+        "jump",
+        "duck",
+        "stumble",
+        "crash",
+        "celebrate"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "rock_pile",
+      "category": "obstacle",
+      "folder": "rock_pile",
+      "runtime": "rock_pile.glb",
+      "triangles": 120,
+      "glbBytes": 15584,
+      "animationClips": [],
+      "validation": true
+    },
+    {
+      "assetId": "rock_wall_cluster",
+      "category": "environment_prop",
+      "folder": "rock_wall_cluster",
+      "runtime": "rock_wall_cluster.glb",
+      "triangles": 100,
+      "glbBytes": 13052,
+      "animationClips": [],
+      "validation": true
+    },
+    {
+      "assetId": "timber_mine_platform",
+      "category": "environment_modular_track_platform",
+      "folder": "timber_mine_platform",
+      "runtime": "timber_mine_platform.glb",
+      "triangles": 1912,
+      "glbBytes": 158320,
+      "animationClips": [],
+      "validation": true
+    },
+    {
+      "assetId": "timber_support_arch",
+      "category": "environment_modular_support",
+      "folder": "timber_support_arch",
+      "runtime": "timber_support_arch.glb",
+      "triangles": 1236,
+      "glbBytes": 91032,
+      "animationClips": [],
+      "validation": true
+    },
+    {
+      "assetId": "timber_support_arch_b",
+      "category": "environment_modular_support",
+      "folder": "timber_support_arch_b",
+      "runtime": "timber_support_arch_b.glb",
+      "triangles": 624,
+      "glbBytes": 47876,
+      "animationClips": [],
+      "validation": true
+    },
+    {
+      "assetId": "timber_support_arch_c",
+      "category": "environment_modular_support",
+      "folder": "timber_support_arch_c",
+      "runtime": "timber_support_arch_c.glb",
+      "triangles": 592,
+      "glbBytes": 46060,
+      "animationClips": [],
+      "validation": true
+    },
+    {
+      "assetId": "torch_sconce",
+      "category": "environment_prop",
+      "folder": "torch_sconce",
+      "runtime": "torch_sconce.glb",
+      "triangles": 208,
+      "glbBytes": 19972,
+      "animationClips": [
+        "flame_flicker_loop"
+      ],
+      "validation": true
+    },
+    {
+      "assetId": "waterfall_frame",
+      "category": "environment_prop",
+      "folder": "waterfall_frame",
+      "runtime": "waterfall_frame.glb",
+      "triangles": 184,
+      "glbBytes": 18528,
+      "animationClips": [
+        "water_flow_loop"
+      ],
+      "validation": true
+    }
+  ]
+}

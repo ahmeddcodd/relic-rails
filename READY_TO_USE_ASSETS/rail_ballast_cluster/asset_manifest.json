@@ -1,0 +1,69 @@
+{
+  "assetId": "rail_ballast_cluster",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "environment_prop",
+  "description": "Small ballast, broken tie wood, and loose hardware for near-camera rail detail.",
+  "files": {
+    "runtime": "rail_ballast_cluster.glb",
+    "source": "rail_ballast_cluster.blend",
+    "preview": "rail_ballast_cluster_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "ground edge beside rails",
+  "boundsBlenderMetres": {
+    "min": [
+      -1.0612,
+      -0.497,
+      -0.0727
+    ],
+    "max": [
+      1.0213,
+      0.5511,
+      0.3327
+    ],
+    "size": [
+      2.0825,
+      1.0481,
+      0.4053
+    ]
+  },
+  "performance": {
+    "triangles": 232,
+    "sourceVertices": 136,
+    "meshPrimitives": 4,
+    "materials": 4,
+    "glbBytes": 26600,
+    "triangleBudget": 700
+  },
+  "meshes": [
+    "GEO_stonedark",
+    "GEO_stone",
+    "GEO_wooddark",
+    "GEO_iron"
+  ],
+  "materials": [
+    "MAT_Iron",
+    "MAT_Stone",
+    "MAT_StoneDark",
+    "MAT_WoodDark"
+  ],
+  "sockets": [],
+  "animation": {
+    "fps": 30,
+    "library": null,
+    "clips": []
+  },
+  "runtimeNotes": [
+    "Instance along rail shoulders, never in the collision lane centre."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

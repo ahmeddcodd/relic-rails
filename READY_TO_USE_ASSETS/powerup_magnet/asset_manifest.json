@@ -1,0 +1,79 @@
+{
+  "assetId": "powerup_magnet",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "powerup",
+  "description": "Readable low-poly magnet power-up with a shared mint pickup ring.",
+  "files": {
+    "runtime": "powerup_magnet.glb",
+    "source": "powerup_magnet.blend",
+    "preview": "powerup_magnet_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "lane centre, root at ground; visible core centred at 1 m",
+  "boundsBlenderMetres": {
+    "min": [
+      -0.2554,
+      -0.5931,
+      0.4199
+    ],
+    "max": [
+      0.2554,
+      0.5931,
+      1.5801
+    ],
+    "size": [
+      0.5107,
+      1.1862,
+      1.1602
+    ]
+  },
+  "performance": {
+    "triangles": 360,
+    "sourceVertices": 190,
+    "meshPrimitives": 6,
+    "materials": 3,
+    "glbBytes": 35956,
+    "triangleBudget": 1800
+  },
+  "meshes": [
+    "ANIM_pickup_ring",
+    "ANIM_magnet_left",
+    "ANIM_magnet_right",
+    "ANIM_magnet_bridge",
+    "ANIM_magnet_tip_l",
+    "ANIM_magnet_tip_r"
+  ],
+  "materials": [
+    "MAT_Hazard",
+    "MAT_IronLight",
+    "MAT_Mint"
+  ],
+  "sockets": [],
+  "animation": {
+    "fps": 30,
+    "library": "powerup_magnet_action_library",
+    "clips": [
+      {
+        "name": "pickup_loop",
+        "start": 1,
+        "end": 60,
+        "loop": true,
+        "description": "Shared two-second bob and spin cadence used by every power-up."
+      }
+    ]
+  },
+  "runtimeNotes": [
+    "Runtime magnet attraction may override root position.",
+    "All power-ups use identical loop timing for visual consistency."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

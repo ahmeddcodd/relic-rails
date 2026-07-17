@@ -1,0 +1,65 @@
+{
+  "assetId": "debris_cluster",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "obstacle",
+  "description": "Minor-hit cluster of broken boards, barrel timber, and stone.",
+  "files": {
+    "runtime": "debris_cluster.glb",
+    "source": "debris_cluster.blend",
+    "preview": "debris_cluster_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "lane centre on ground",
+  "boundsBlenderMetres": {
+    "min": [
+      -0.6833,
+      -0.3838,
+      -0.0934
+    ],
+    "max": [
+      0.7577,
+      0.5141,
+      0.5251
+    ],
+    "size": [
+      1.441,
+      0.8979,
+      0.6185
+    ]
+  },
+  "performance": {
+    "triangles": 136,
+    "sourceVertices": 76,
+    "meshPrimitives": 3,
+    "materials": 3,
+    "glbBytes": 14504,
+    "triangleBudget": 650
+  },
+  "meshes": [
+    "GEO_wooddark",
+    "GEO_wood",
+    "GEO_stone"
+  ],
+  "materials": [
+    "MAT_Stone",
+    "MAT_Wood",
+    "MAT_WoodDark"
+  ],
+  "sockets": [],
+  "animation": {
+    "fps": 30,
+    "library": null,
+    "clips": []
+  },
+  "runtimeNotes": [],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

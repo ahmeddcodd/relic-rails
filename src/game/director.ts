@@ -34,6 +34,19 @@ const BIOME_OBSTACLES: ObstacleType[][] = [
 
 const POWERUP_ROTATION: PowerupKind[] = ['magnet', 'shield', 'frenzy', 'ghost', 'repair'];
 
+export function parseBiomeOverride(raw: string | null): number {
+  if (raw === null || raw.trim() === '') return Number.NaN;
+  const value = Number(raw);
+  return Number.isInteger(value) && value >= 0 && value < BIOME_OBSTACLES.length
+    ? value
+    : Number.NaN;
+}
+
+const DEV_BIOME =
+  import.meta.env.DEV && typeof window !== 'undefined'
+    ? parseBiomeOverride(new URLSearchParams(window.location.search).get('biome'))
+    : Number.NaN;
+
 export interface PlacedAction {
   dist: number;
   lane: LaneIndex;
@@ -42,6 +55,7 @@ export interface PlacedAction {
 
 export class Director {
   private genDist = 0; // content generated up to here
+  private cartDist = 0; // live cart distance (for the endless speed ramp)
   private runTime = 0;
   private rand = new Rand(1);
   private patternsSinceRecovery = 0;
@@ -54,14 +68,6 @@ export class Director {
   /** dev/testing: record of required actions for validation */
   plan: PlacedAction[] = [];
 
-  // --- fork (Temple-Run-style branching) state ---
-  /** true while a fork is placed ahead but the player has not committed a side. */
-  forkPending = false;
-  /** distance of the split point; path generation halts here until commit. */
-  forkDist = 0;
-  private forkApproachDone = false;
-  private nextForkAt = 300;
-
   phase = 0;
 
   constructor(
@@ -73,6 +79,7 @@ export class Director {
   reset(seed: number, tutorial: boolean): void {
     this.rand = new Rand(seed);
     this.genDist = 0;
+    this.cartDist = 0;
     this.runTime = 0;
     this.phase = 0;
     this.patternsSinceRecovery = 0;
@@ -81,18 +88,22 @@ export class Director {
     this.powerupIdx = 0;
     this.nextPowerupAt = 260;
     this.tutorial = tutorial;
-    this.forkPending = false;
-    this.forkDist = 0;
-    this.forkApproachDone = false;
-    this.nextForkAt = tutorial ? 520 : 300; // first fork only after the basics land
     this.plan.length = 0;
   }
 
   get targetSpeed(): number {
-    return PHASE_SPEEDS[this.phase];
+    const base = PHASE_SPEEDS[this.phase];
+    // Endless distance ramp: only kicks in at the final phase, so the timed
+    // curve is untouched early. Past `endlessFrom` metres, add a slow
+    // per-metre bump up to the hard `max` ceiling — longer runs stay faster.
+    if (this.phase < PHASE_SPEEDS.length - 1) return base;
+    const s = TUNING.speed;
+    const extra = Math.max(0, this.cartDist - s.endlessFrom) * s.endlessPerMetre;
+    return Math.min(s.max, base + extra);
   }
 
   biomeAt = (dist: number): number => {
+    if (Number.isInteger(DEV_BIOME) && DEV_BIOME >= 0 && DEV_BIOME < 4) return DEV_BIOME;
     if (dist < 0) return 0;
     return Math.floor(dist / TUNING.biome.length) % 4;
   };
@@ -105,6 +116,7 @@ export class Director {
 
   update(dt: number, cartDist: number): void {
     this.runTime += dt;
+    this.cartDist = cartDist;
     const ph = TUNING.phases;
     this.phase = 0;
     for (let i = ph.length - 1; i >= 0; i--) {
@@ -114,69 +126,16 @@ export class Director {
       }
     }
 
-    // Keep the geometric path generated ahead — but STOP at a pending fork.
-    // The path cannot branch until the player commits a side, so once a fork is
-    // scheduled we queue nothing past it; head halts at forkDist and the split
-    // visual + fog make that a readable "the road ends in two choices" moment.
-    while (
-      !this.forkPending &&
-      this.path.queuedLength() + this.path.headDist < cartDist + TUNING.track.aheadDist + 80
-    ) {
-      const queuedEnd = this.path.headDist + this.path.queuedLength();
-      if (this.canForkAt(queuedEnd)) {
-        this.scheduleFork(queuedEnd);
-        break;
-      }
+    // Keep the geometric path generated ahead.
+    while (this.path.queuedLength() + this.path.headDist < cartDist + TUNING.track.aheadDist + 80) {
       this.pushTrackModule();
     }
     this.path.ensure(cartDist + TUNING.track.aheadDist);
 
-    // Keep content generated ahead (also halts at a pending fork).
+    // Keep content generated ahead.
     while (this.genDist < cartDist + TUNING.track.aheadDist - 40) {
-      if (this.forkPending && this.genDist >= this.forkDist) break;
       this.generateNext();
     }
-  }
-
-  // --- forks ----------------------------------------------------------------
-  private canForkAt(dist: number): boolean {
-    return (
-      !this.tutorial &&
-      this.runTime >= 6 && // let the player settle before the first split
-      dist >= this.nextForkAt &&
-      !this.inTransition(dist) &&
-      !this.inTransition(dist + 60) && // keep the whole branch out of a biome gate
-      this.biomeAt(dist) === this.biomeAt(dist + 70) // don't fork across a biome
-    );
-  }
-
-  private scheduleFork(atLeast: number): void {
-    // Give a straight lead-in so the player runs squarely into the split.
-    this.path.pushModule({ len: 34, curve: 0, slope: 0 });
-    this.forkDist = this.path.headDist + this.path.queuedLength();
-    this.forkPending = true;
-    this.forkApproachDone = false;
-    void atLeast;
-  }
-
-  /** Commit the branch the player chose. side: -1 = left, +1 = right. */
-  commitFork(side: -1 | 1): void {
-    if (!this.forkPending) return;
-    this.forkPending = false;
-    // The whole world turns toward the chosen side, then straightens out.
-    this.path.pushModule({ len: 52, curve: 0.62 * side, slope: 0 });
-    this.path.pushModule({ len: 26, curve: 0, slope: 0 });
-    this.nextForkAt = this.forkDist + this.rand.range(340, 520);
-    // Resume content generation from the fork point onward.
-    this.genDist = this.forkDist;
-  }
-
-  /** Split shard trail guiding the player toward either lane before the fork. */
-  private generateForkApproach(): void {
-    const j = this.forkDist;
-    this.trailFlat(j - 40, 1, 3, 2.6); // run in centred
-    this.trailCurve(j - 28, 1, 0, 6, 2.4); // peel left
-    this.trailCurve(j - 28, 1, 2, 6, 2.4); // peel right
   }
 
   private pushTrackModule(): void {
@@ -200,18 +159,6 @@ export class Director {
 
   // --- content -------------------------------------------------------------
   private generateNext(): void {
-    // Approaching a pending fork: lay the split telegraph once, then park
-    // content at the split (nothing is generated past it until commit). The
-    // 55 m guard exceeds any single pattern's span, so no hazard can spill onto
-    // the not-yet-generated branch.
-    if (this.forkPending && this.genDist >= this.forkDist - 55) {
-      if (!this.forkApproachDone) {
-        this.generateForkApproach();
-        this.forkApproachDone = true;
-      }
-      this.genDist = this.forkDist;
-      return;
-    }
     if (this.tutorial && this.genDist < 10) {
       this.generateTutorial();
       return;
@@ -244,12 +191,6 @@ export class Director {
       return;
     }
     this.patternsSinceRecovery++;
-    // Within a fork's approach corridor, only short single patterns run so the
-    // last hazard always lands clear of the split.
-    if (this.forkPending) {
-      this.patSingle();
-      return;
-    }
     const pattern = this.pickPattern();
     pattern();
   }
@@ -290,7 +231,14 @@ export class Director {
    * speed — the reaction window then holds even across the ramp.
    */
   private actionGap(): number {
-    const s = PHASE_SPEEDS[Math.min(this.phase + 1, PHASE_SPEEDS.length - 1)];
+    // Space against the NEXT phase's speed so the reaction window holds across
+    // the ramp. At the final phase, the endless distance ramp keeps raising the
+    // real speed, so use the live target (which includes it) — the gap widens
+    // as the cart gets faster, keeping reactions fair at any distance.
+    const s =
+      this.phase < PHASE_SPEEDS.length - 1
+        ? PHASE_SPEEDS[this.phase + 1]
+        : this.targetSpeed;
     return s * TUNING.fairness.reactionTime;
   }
 

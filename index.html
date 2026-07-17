@@ -8,8 +8,9 @@
     />
     <meta name="theme-color" content="#1a0f08" />
     <title>Relic Rails: Abyss Run</title>
-    <!-- YouTube Playables SDK must load before game code -->
-    <script src="https://www.youtube.com/game_api/v1" async></script>
+    <!-- YouTube Playables SDK MUST load before any game code (not async: the
+         game module is deferred, and the SDK must be present first). -->
+    <script src="https://www.youtube.com/game_api/v1"></script>
   </head>
   <body>
     <div id="app">

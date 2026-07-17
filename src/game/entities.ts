@@ -4,10 +4,7 @@
 // ---------------------------------------------------------------------------
 import * as THREE from 'three';
 import { TUNING, type LaneIndex } from '../config/tuning';
-import { COLORS } from '../render/palette';
 import {
-  GEO,
-  mat,
   buildBlockerCart,
   buildBrokenRail,
   buildLowBeam,
@@ -18,6 +15,10 @@ import {
   buildCrystalSpikes,
   buildDebris,
   buildPowerup,
+  buildInstancedAsset,
+  playAssetClip,
+  updateAssetAnimation,
+  type InstancedAsset,
 } from '../render/assets';
 import type { TrackPath } from './track';
 
@@ -38,7 +39,7 @@ export interface ObstacleSpec {
   action: RequiredAction;
   major: boolean;
   halfLen: number;
-  /** Cart must be at least this high to clear (jump obstacles). */
+  /** Jump height minimum, or maximum rider-top clearance for duck obstacles. */
   clearHeight: number;
   build: () => THREE.Group;
 }
@@ -48,8 +49,8 @@ export interface ObstacleSpec {
 export const OBSTACLE_SPECS: Record<ObstacleType, ObstacleSpec> = {
   blocker: { action: 'switch', major: true, halfLen: 1.1, clearHeight: 99, build: buildBlockerCart },
   gap: { action: 'jump', major: true, halfLen: 1.6, clearHeight: 0.55, build: buildBrokenRail },
-  beam: { action: 'duck', major: true, halfLen: 0.5, clearHeight: 99, build: buildLowBeam },
-  gate: { action: 'duck', major: true, halfLen: 0.5, clearHeight: 99, build: buildGate },
+  beam: { action: 'duck', major: true, halfLen: 0.5, clearHeight: 2.25, build: buildLowBeam },
+  gate: { action: 'duck', major: true, halfLen: 0.5, clearHeight: 2.25, build: buildGate },
   rocks: { action: 'jump', major: true, halfLen: 0.9, clearHeight: 0.9, build: buildRockPile },
   oncoming: { action: 'switch', major: true, halfLen: 1.2, clearHeight: 99, build: buildOncomingCart },
   fire: { action: 'switch', major: true, halfLen: 0.8, clearHeight: 99, build: buildFireJet },
@@ -68,6 +69,7 @@ export interface Obstacle {
 }
 
 const tmpM = new THREE.Matrix4();
+const tmpPartM = new THREE.Matrix4();
 const tmpV = new THREE.Vector3();
 const tmpV2 = new THREE.Vector3();
 const FLIP_Y = new THREE.Matrix4().makeRotationY(Math.PI);
@@ -75,11 +77,17 @@ const FLIP_Y = new THREE.Matrix4().makeRotationY(Math.PI);
 const ACTIVATE_AHEAD = 170;
 const RELEASE_BEHIND = 14;
 
+const OBSTACLE_ANIMS: Partial<Record<ObstacleType, string>> = {
+  beam: 'chain_sway_loop',
+  gate: 'warning_shudder',
+  oncoming: 'approach_loop',
+  fire: 'flame_loop',
+};
+
 export class ObstacleManager {
   list: Obstacle[] = [];
   private pools = new Map<ObstacleType, THREE.Group[]>();
   private root = new THREE.Group();
-  private animT = 0;
 
   constructor(private path: TrackPath, scene: THREE.Scene) {
     scene.add(this.root);
@@ -111,6 +119,8 @@ export class ObstacleManager {
       this.root.add(g);
     }
     g.visible = true;
+    const clip = OBSTACLE_ANIMS[type];
+    if (clip) playAssetClip(g, clip, true);
     return g;
   }
 
@@ -122,8 +132,6 @@ export class ObstacleManager {
   }
 
   update(dt: number, cartDist: number): void {
-    this.animT += dt;
-    const flamePulse = 1 + Math.sin(this.animT * 11) * 0.18;
     let w = 0;
     for (let r = 0; r < this.list.length; r++) {
       const o = this.list[r];
@@ -142,9 +150,8 @@ export class ObstacleManager {
         this.place(o);
       } else if (o.mesh && (o.moveSpeed > 0 || o.type === 'fire')) {
         if (o.moveSpeed > 0) this.place(o);
-        const flame = o.mesh.getObjectByName('flame');
-        if (flame) flame.scale.setScalar(flamePulse);
       }
+      if (o.mesh) updateAssetAnimation(o.mesh, dt);
     }
     this.list.length = w;
   }
@@ -186,10 +193,17 @@ function makeStore(cap: number): ShardStore {
 
 export type PowerupKind = 'magnet' | 'shield' | 'ghost' | 'frenzy' | 'repair';
 
-function hideAllInstances(mesh: THREE.InstancedMesh): void {
+function setInstanceMatrix(model: InstancedAsset, index: number, rootMatrix: THREE.Matrix4): void {
+  for (let part = 0; part < model.meshes.length; part++) {
+    tmpPartM.multiplyMatrices(rootMatrix, model.relativeMatrices[part]);
+    model.meshes[part].setMatrixAt(index, tmpPartM);
+  }
+}
+
+function hideAllInstances(model: InstancedAsset): void {
   tmpM.makeScale(0, 0, 0);
-  for (let i = 0; i < mesh.count; i++) mesh.setMatrixAt(i, tmpM);
-  mesh.instanceMatrix.needsUpdate = true;
+  for (let i = 0; i < model.count; i++) setInstanceMatrix(model, i, tmpM);
+  for (const mesh of model.meshes) mesh.instanceMatrix.needsUpdate = true;
 }
 
 interface PowerupPickup {
@@ -209,8 +223,8 @@ export interface CollectCallbacks {
 export class CollectibleManager {
   private embers = makeStore(EMBER_CAP);
   private prisms = makeStore(PRISM_CAP);
-  private emberMesh: THREE.InstancedMesh;
-  private prismMesh: THREE.InstancedMesh;
+  private emberModel: InstancedAsset;
+  private prismModel: InstancedAsset;
   private powerups: PowerupPickup[] = [];
   private puPool = new Map<PowerupKind, THREE.Group[]>();
   private root = new THREE.Group();
@@ -221,23 +235,11 @@ export class CollectibleManager {
 
   constructor(private path: TrackPath, scene: THREE.Scene) {
     scene.add(this.root);
-    this.emberMesh = new THREE.InstancedMesh(
-      GEO.octa(0.3),
-      mat(COLORS.ember, { emissive: 0xd97810, emissiveIntensity: 0.85, rough: 0.3, metal: 0.2 }),
-      EMBER_CAP,
-    );
-    this.prismMesh = new THREE.InstancedMesh(
-      GEO.ico(0.5, 0),
-      mat(COLORS.prism, { emissive: 0x8a34d8, emissiveIntensity: 1.0, rough: 0.2 }),
-      PRISM_CAP,
-    );
-    this.emberMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    this.prismMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    this.emberMesh.frustumCulled = false;
-    this.prismMesh.frustumCulled = false;
-    hideAllInstances(this.emberMesh);
-    hideAllInstances(this.prismMesh);
-    this.root.add(this.emberMesh, this.prismMesh);
+    this.emberModel = buildInstancedAsset('ember_shard', EMBER_CAP);
+    this.prismModel = buildInstancedAsset('prism', PRISM_CAP);
+    hideAllInstances(this.emberModel);
+    hideAllInstances(this.prismModel);
+    this.root.add(this.emberModel.root, this.prismModel.root);
   }
 
   reset(): void {
@@ -249,8 +251,8 @@ export class CollectibleManager {
     this.trailLeft.clear();
     for (const p of this.powerups) this.releasePu(p);
     this.powerups.length = 0;
-    hideAllInstances(this.emberMesh);
-    hideAllInstances(this.prismMesh);
+    hideAllInstances(this.emberModel);
+    hideAllInstances(this.prismModel);
   }
 
   newTrailId(): number {
@@ -304,8 +306,8 @@ export class CollectibleManager {
     cb: CollectCallbacks,
   ): void {
     this.spin += dt * 2.6;
-    this.updateStore(this.embers, this.emberMesh, EMBER_CAP, cartDist, cartLateral, cartY, magnetActive, cb, true);
-    this.updateStore(this.prisms, this.prismMesh, PRISM_CAP, cartDist, cartLateral, cartY, magnetActive, cb, false);
+    this.updateStore(this.embers, this.emberModel, EMBER_CAP, cartDist, cartLateral, cartY, magnetActive, cb, true);
+    this.updateStore(this.prisms, this.prismModel, PRISM_CAP, cartDist, cartLateral, cartY, magnetActive, cb, false);
 
     // Power-ups
     let w = 0;
@@ -322,22 +324,13 @@ export class CollectibleManager {
         p.mesh = pool.pop() ?? buildPowerup(p.kind);
         if (!p.mesh.parent) this.root.add(p.mesh);
         p.mesh.visible = true;
+        playAssetClip(p.mesh, 'pickup_loop', true);
         this.path.getBasis(p.dist, TUNING.track.laneOffsets[p.lane], tmpM);
         p.mesh.matrixAutoUpdate = false;
         p.mesh.matrix.copy(tmpM);
       }
       if (p.mesh) {
-        const ring = p.mesh.getObjectByName('ring');
-        const core = p.mesh.getObjectByName('core');
-        if (ring) {
-          ring.rotation.y = this.spin;
-          ring.updateMatrix();
-        }
-        if (core) {
-          core.rotation.y = -this.spin * 1.4;
-          core.position.y = 1.0 + Math.sin(this.spin * 1.7) * 0.12;
-          core.updateMatrix();
-        }
+        updateAssetAnimation(p.mesh, dt);
         // pickup check
         const dd = Math.abs(p.dist - cartDist);
         if (dd < TUNING.collision.pickupRadius && Math.abs(TUNING.track.laneOffsets[p.lane] - cartLateral) < 1.3 && cartY < 1.6) {
@@ -353,7 +346,7 @@ export class CollectibleManager {
 
   private updateStore(
     s: ShardStore,
-    mesh: THREE.InstancedMesh,
+    model: InstancedAsset,
     cap: number,
     cartDist: number,
     cartLateral: number,
@@ -367,19 +360,19 @@ export class CollectibleManager {
     for (let i = 0; i < cap; i++) {
       if (s.state[i] !== 1) {
         tmpM.makeScale(0, 0, 0);
-        mesh.setMatrixAt(i, tmpM);
+        setInstanceMatrix(model, i, tmpM);
         continue;
       }
       const d = s.dist[i];
       if (d < cartDist - RELEASE_BEHIND) {
         s.state[i] = 0;
         tmpM.makeScale(0, 0, 0);
-        mesh.setMatrixAt(i, tmpM);
+        setInstanceMatrix(model, i, tmpM);
         continue;
       }
       if (d > cartDist + ACTIVATE_AHEAD) {
         tmpM.makeScale(0, 0, 0);
-        mesh.setMatrixAt(i, tmpM);
+        setInstanceMatrix(model, i, tmpM);
         continue;
       }
       let lat = s.lane[i];
@@ -405,7 +398,7 @@ export class CollectibleManager {
           cb.onPrism(tmpV);
         }
         tmpM.makeScale(0, 0, 0);
-        mesh.setMatrixAt(i, tmpM);
+        setInstanceMatrix(model, i, tmpM);
         continue;
       }
       this.path.getPoint(d, lat, tmpV);
@@ -413,9 +406,12 @@ export class CollectibleManager {
       tmpM.makeRotationY(Math.atan2(tmpV2.x, tmpV2.z) + this.spin);
       const sc = isEmber ? 1 : 1 + Math.sin(this.spin * 2 + d) * 0.12;
       if (sc !== 1) tmpM.scale(tmpV2.set(sc, sc, sc));
-      tmpM.setPosition(tmpV.x, tmpV.y + y, tmpV.z);
-      mesh.setMatrixAt(i, tmpM);
+      // The authored collectible roots sit on the ground and their visible
+      // cores are centred at +0.9 m. Convert the gameplay centre back to that
+      // root height before applying each GLB mesh's relative transform.
+      tmpM.setPosition(tmpV.x, tmpV.y + y - 0.9, tmpV.z);
+      setInstanceMatrix(model, i, tmpM);
     }
-    mesh.instanceMatrix.needsUpdate = true;
+    for (const mesh of model.meshes) mesh.instanceMatrix.needsUpdate = true;
   }
 }

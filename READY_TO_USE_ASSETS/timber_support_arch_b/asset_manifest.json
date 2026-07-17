@@ -1,0 +1,72 @@
+{
+  "assetId": "timber_support_arch_b",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "environment_modular_support",
+  "description": "Timber support variant B with left-side repair reinforcement.",
+  "files": {
+    "runtime": "timber_support_arch_b.glb",
+    "source": "timber_support_arch_b.blend",
+    "preview": "timber_support_arch_b_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "track centreline at ground",
+  "boundsBlenderMetres": {
+    "min": [
+      -7.34,
+      -0.43,
+      0.02
+    ],
+    "max": [
+      7.34,
+      0.43,
+      8.5731
+    ],
+    "size": [
+      14.68,
+      0.86,
+      8.5531
+    ]
+  },
+  "performance": {
+    "triangles": 624,
+    "sourceVertices": 336,
+    "meshPrimitives": 3,
+    "materials": 3,
+    "glbBytes": 47876,
+    "triangleBudget": 1500
+  },
+  "meshes": [
+    "GEO_wood",
+    "GEO_wooddark",
+    "GEO_iron"
+  ],
+  "materials": [
+    "MAT_Iron",
+    "MAT_Wood",
+    "MAT_WoodDark"
+  ],
+  "sockets": [
+    "SOCKET_torch_left",
+    "SOCKET_torch_right",
+    "SOCKET_apex_fx"
+  ],
+  "animation": {
+    "fps": 30,
+    "library": null,
+    "clips": []
+  },
+  "runtimeNotes": [
+    "Same clearance and origin contract as Timber Support Arch A.",
+    "Attach torches and dust to named sockets."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "assetId": "crystal_cluster_large",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "environment_prop",
+  "description": "Large wall-integrated cyan/violet crystal formation.",
+  "files": {
+    "runtime": "crystal_cluster_large.glb",
+    "source": "crystal_cluster_large.blend",
+    "preview": "crystal_cluster_large_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "rock/floor attachment point",
+  "boundsBlenderMetres": {
+    "min": [
+      -1.3726,
+      -0.6109,
+      -0.2373
+    ],
+    "max": [
+      1.3586,
+      0.7109,
+      2.9564
+    ],
+    "size": [
+      2.7311,
+      1.3219,
+      3.1938
+    ]
+  },
+  "performance": {
+    "triangles": 120,
+    "sourceVertices": 72,
+    "meshPrimitives": 3,
+    "materials": 3,
+    "glbBytes": 13464,
+    "triangleBudget": 900
+  },
+  "meshes": [
+    "GEO_cyan",
+    "GEO_violet",
+    "GEO_stonedark"
+  ],
+  "materials": [
+    "MAT_Cyan",
+    "MAT_StoneDark",
+    "MAT_Violet"
+  ],
+  "sockets": [],
+  "animation": {
+    "fps": 30,
+    "library": null,
+    "clips": []
+  },
+  "runtimeNotes": [
+    "Keep clusters against cavern surfaces so they do not resemble collectible trails."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

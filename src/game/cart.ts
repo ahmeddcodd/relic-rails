@@ -5,7 +5,14 @@
 // ---------------------------------------------------------------------------
 import * as THREE from 'three';
 import { TUNING, type LaneIndex } from '../config/tuning';
-import { buildCart, buildRin, type CartModel, type RinModel } from '../render/assets';
+import {
+  buildCart,
+  buildRin,
+  playAssetClip,
+  updateAssetAnimation,
+  type CartModel,
+  type RinModel,
+} from '../render/assets';
 import type { TrackPath } from './track';
 
 export interface CartEvents {
@@ -46,6 +53,11 @@ export class CartController {
   airborne = false;
   ducking = false;
 
+  /** Physical top of the authored cart+rider silhouette above the rail plane. */
+  get riderTop(): number {
+    return this.ducking ? TUNING.cart.duckRiderTop : TUNING.cart.standingRiderTop;
+  }
+
   crashed = false;
   private crashT = 0;
   stumbleT = 0; // >0 during minor-hit recovery (also brief invulnerability)
@@ -53,16 +65,20 @@ export class CartController {
   private buffered: BufferedAction = null;
   private bufferAge = 0;
 
-  private wheelSpin = 0;
   private leanVel = 0;
   private lean = 0;
+  private rinActionT = 0;
 
   constructor(private path: TrackPath, scene: THREE.Scene, private events: CartEvents) {
     this.model = buildCart();
     this.rin = buildRin();
-    this.rin.root.position.set(0, 0.62, -0.25);
-    this.root.add(this.model.root, this.rin.root);
+    // Both files use metres, +Y up, +Z forward. The authored rider socket is
+    // therefore the only placement offset Rin needs.
+    this.model.riderSocket.add(this.rin.root);
+    this.root.add(this.model.root);
     scene.add(this.root);
+    playAssetClip(this.model.animationRoot, 'idle_loop', true);
+    playAssetClip(this.rin.root, 'idle_cart', true);
   }
 
   reset(): void {
@@ -85,10 +101,13 @@ export class CartController {
     this.buffered = null;
     this.lean = 0;
     this.leanVel = 0;
+    this.rinActionT = 0;
     this.model.hull.rotation.set(0, 0, 0);
     this.model.root.rotation.set(0, 0, 0);
     this.model.root.position.set(0, 0, 0);
     this.model.shield.visible = false;
+    playAssetClip(this.model.animationRoot, 'idle_loop', true);
+    playAssetClip(this.rin.root, 'idle_cart', true);
   }
 
   /** Queue a gameplay action (with input buffering). */
@@ -120,6 +139,7 @@ export class CartController {
         this.laneT = 0;
         this.switchCooldown = c.laneSwitchCooldown;
         this.leanVel += dir * 5;
+        this.playRinAction(dir < 0 ? 'lean_left' : 'lean_right', 0.42, 1.6);
         this.events.onSwitch(dir as -1 | 1);
         return true;
       }
@@ -129,6 +149,7 @@ export class CartController {
         this.airborne = true;
         this.ducking = false;
         this.duckT = 0;
+        this.playRinAction('jump', c.jumpTime, 2.2);
         this.events.onJump();
         return true;
       case 'duck':
@@ -140,6 +161,7 @@ export class CartController {
         this.duckT = TUNING.cart.duckTime;
         if (!this.ducking) this.events.onDuck();
         this.ducking = true;
+        this.playRinAction('duck', c.duckTime, 1.5);
         return true;
     }
     return false;
@@ -148,16 +170,27 @@ export class CartController {
   startCrash(): void {
     this.crashed = true;
     this.crashT = 0;
+    playAssetClip(this.model.animationRoot, 'crash', true, 1.1);
+    playAssetClip(this.rin.root, 'crash', true, 1.1);
   }
 
   stumble(): void {
     this.stumbleT = TUNING.speed.recoverTime;
     this.speed *= 1 - TUNING.speed.minorHitLoss;
     this.leanVel += (Math.random() > 0.5 ? 1 : -1) * 6;
+    this.playRinAction('stumble', Math.min(0.85, TUNING.speed.recoverTime), 1.2);
   }
 
   get invulnerable(): boolean {
     return this.stumbleT > TUNING.speed.recoverTime - TUNING.speed.mercyTime;
+  }
+
+  /** Advance authored idle clips without advancing gameplay kinematics. */
+  animateIdle(dt: number): void {
+    playAssetClip(this.model.animationRoot, 'idle_loop');
+    playAssetClip(this.rin.root, 'idle_cart');
+    updateAssetAnimation(this.model.animationRoot, dt);
+    updateAssetAnimation(this.rin.root, dt);
   }
 
   update(dt: number): void {
@@ -251,25 +284,31 @@ export class CartController {
       this.model.hull.position.y = Math.sin(this.dist * 7) * rattle;
     }
 
-    // Wheels
-    this.wheelSpin += (this.speed / 0.3) * dt;
-    for (const w of this.model.wheels) w.rotation.x = this.wheelSpin;
+    if (!this.crashed) {
+      if (this.speed > 0.2) {
+        // The Blender wheel clip contains one revolution per second. Scale it
+        // from linear velocity using the authored 0.3 m wheel radius.
+        const turnsPerSecond = this.speed / (Math.PI * 0.6);
+        playAssetClip(this.model.animationRoot, 'wheel_spin_loop', false, turnsPerSecond);
+      } else {
+        playAssetClip(this.model.animationRoot, 'idle_loop');
+      }
+      if (this.rinActionT > 0) this.rinActionT = Math.max(0, this.rinActionT - dt);
+      else playAssetClip(this.rin.root, 'idle_cart');
+    }
+    updateAssetAnimation(this.model.animationRoot, dt);
+    updateAssetAnimation(this.rin.root, dt);
 
     // Sunheart lantern pulse
-    const lm = this.model.lantern.material as THREE.MeshStandardMaterial;
-    lm.emissiveIntensity = 2.0 + Math.sin(this.dist * 0.5) * 0.5;
+    const lm = this.model.lantern.material;
+    const lanternMaterial = Array.isArray(lm) ? lm[0] : lm;
+    if (lanternMaterial instanceof THREE.MeshStandardMaterial) {
+      lanternMaterial.emissiveIntensity = 2.0 + Math.sin(this.dist * 0.5) * 0.5;
+    }
+  }
 
-    // Rin procedural animation
-    const rin = this.rin;
-    const duckCrouch = this.ducking ? 0.5 : 1;
-    rin.torso.scale.y += (duckCrouch - rin.torso.scale.y) * Math.min(1, dt * 14);
-    rin.torso.rotation.z = -leanClamped * 1.6;
-    rin.torso.rotation.x = this.airborne ? -0.28 : Math.min(0.2, this.speed * 0.006);
-    rin.head.rotation.x = this.airborne ? 0.2 : -0.05;
-    const armLift = this.airborne ? -2.1 : -1.0;
-    rin.armL.rotation.x += (armLift - rin.armL.rotation.x) * Math.min(1, dt * 10);
-    rin.armR.rotation.x += (armLift - rin.armR.rotation.x) * Math.min(1, dt * 10);
-    // scarf flutter
-    rin.scarf.rotation.x = Math.sin(this.dist * 1.7) * 0.2 - this.speed * 0.012;
+  private playRinAction(name: string, duration: number, speed: number): void {
+    this.rinActionT = duration;
+    playAssetClip(this.rin.root, name, true, speed);
   }
 }

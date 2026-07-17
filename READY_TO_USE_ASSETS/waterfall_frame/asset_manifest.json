@@ -1,0 +1,80 @@
+{
+  "assetId": "waterfall_frame",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "environment_prop",
+  "description": "Timber-framed layered waterfall card with subtle flowing silhouette animation.",
+  "files": {
+    "runtime": "waterfall_frame.glb",
+    "source": "waterfall_frame.blend",
+    "preview": "waterfall_frame_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "ground centre at waterfall base",
+  "boundsBlenderMetres": {
+    "min": [
+      -1.9494,
+      -0.1993,
+      -0.0027
+    ],
+    "max": [
+      1.9494,
+      0.1993,
+      4.3203
+    ],
+    "size": [
+      3.8988,
+      0.3986,
+      4.323
+    ]
+  },
+  "performance": {
+    "triangles": 184,
+    "sourceVertices": 104,
+    "meshPrimitives": 4,
+    "materials": 3,
+    "glbBytes": 18528,
+    "triangleBudget": 1000
+  },
+  "meshes": [
+    "GEO_wooddark",
+    "GEO_wood",
+    "ANIM_water_front",
+    "ANIM_water_back"
+  ],
+  "materials": [
+    "MAT_Water",
+    "MAT_Wood",
+    "MAT_WoodDark"
+  ],
+  "sockets": [
+    "SOCKET_mist",
+    "SOCKET_splash"
+  ],
+  "animation": {
+    "fps": 30,
+    "library": "waterfall_frame_action_library",
+    "clips": [
+      {
+        "name": "water_flow_loop",
+        "start": 1,
+        "end": 60,
+        "loop": true,
+        "description": "Counter-offset layered flow motion."
+      }
+    ]
+  },
+  "runtimeNotes": [
+    "Use runtime mist and splash particles at named sockets.",
+    "Material opacity may be tuned in Three.js for the scene background."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

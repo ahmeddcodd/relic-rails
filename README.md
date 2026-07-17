@@ -33,15 +33,18 @@ npm run sizecheck  # Playables bundle-limit check (run after build)
 - `src/platform/bridge.ts` — the ONLY file touching `window.ytgame`. Local dev uses a
   localStorage mock; the real bridge is selected at runtime when the SDK is present.
 - `src/platform/save.ts` — versioned, migration-safe save (< 1 KiB).
-- `src/game/track.ts` — ring-buffer arc-length track path + pooled visual chunks
-  (merged vertex-colored environment geometry, ~4 draw calls per 32 m chunk).
+- `src/game/track.ts` — ring-buffer arc-length track path + pooled visual chunks;
+  complete four-metre Blender platform modules with filled shoulders are instanced along
+  curves and slopes.
 - `src/game/director.ts` — phase-gated procedural generation with explicit fairness
   rules and a validator (`validatePlan`, unit-tested across seeds).
 - `src/game/game.ts` — state machine + run loop; owns SDK lifecycle ordering.
 - `src/audio/audio.ts` — fully procedural WebAudio (layered music stems + synth SFX,
   zero audio files, no autoplay, platform-audio gated).
-- All models are procedural primitives via shared caches (`src/render/assets.ts`) —
-  zero external assets, zero licensing surface.
+- `src/render/assets.ts` — one-time GLB preload, pooled clones, authored subclips,
+  instanced collectibles, and instanced biome track/platform modules.
+- `src/render/gfx.ts` — camera-centred gradient sky, biome sun/stars/cloud bands, fog,
+  and complementary rim lighting in one lightweight atmospheric draw call.
 
 See `ARCHITECTURE-notes in TECHNICAL_DECISIONS.md` for the reasoning behind each call.
 

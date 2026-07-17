@@ -61,12 +61,28 @@ export function migrateSave(raw: unknown): SaveData {
   return d;
 }
 
+// YouTube Playables caps a single saveData payload at 3 MiB of UTF-16. Our save
+// is <1 KiB by design, so this is a defensive ceiling: if serialization ever
+// balloons past it (a bug), skip the write rather than let the SDK reject it.
+const SAVE_BYTE_LIMIT = 3 * 1024 * 1024;
+
 export class SaveManager {
   data: SaveData = defaultSave();
   private loaded = false;
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private bridge: PlatformBridge) {}
+
+  /** Serialize the save, or null if it exceeds the platform's 3 MiB limit. */
+  private serialize(): string | null {
+    const str = JSON.stringify(this.data);
+    // UTF-16: each string code unit is 2 bytes.
+    if (str.length * 2 > SAVE_BYTE_LIMIT) {
+      console.warn(`save skipped: ${str.length * 2} bytes exceeds 3 MiB limit`);
+      return null;
+    }
+    return str;
+  }
 
   async load(): Promise<SaveData> {
     let raw: unknown = null;
@@ -87,7 +103,8 @@ export class SaveManager {
     if (this.saveTimer) clearTimeout(this.saveTimer);
     this.saveTimer = setTimeout(() => {
       this.saveTimer = null;
-      void this.bridge.saveData(JSON.stringify(this.data));
+      const str = this.serialize();
+      if (str !== null) void this.bridge.saveData(str);
     }, 400);
   }
 
@@ -98,6 +115,7 @@ export class SaveManager {
       clearTimeout(this.saveTimer);
       this.saveTimer = null;
     }
-    void this.bridge.saveData(JSON.stringify(this.data));
+    const str = this.serialize();
+    if (str !== null) void this.bridge.saveData(str);
   }
 }

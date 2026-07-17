@@ -1,0 +1,48 @@
+{
+  "assetId": "flooded_ravine_platform",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "environment_modular_track_platform",
+  "description": "Four-metre Blender-authored Flooded Ravine platform with track, filled shoulders, mountains, and walls.",
+  "files": {
+    "runtime": "flooded_ravine_platform.glb",
+    "source": "flooded_ravine_platform.blend",
+    "preview": "flooded_ravine_platform_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "module centre on track basis; repeat every 4 metres",
+  "moduleLengthMetres": 4.0,
+  "boundsBlenderMetres": {
+    "min": [
+      -13.05,
+      -2.6853,
+      -1.41
+    ],
+    "max": [
+      13.05,
+      2.5554,
+      8.6
+    ],
+    "size": [
+      26.1,
+      5.2407,
+      10.01
+    ]
+  },
+  "performance": {
+    "triangles": 2064,
+    "sourceVertices": 1144,
+    "meshPrimitives": 7,
+    "materials": 7,
+    "glbBytes": 165092,
+    "triangleBudget": 3200
+  },
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "allPass": true
+  }
+}

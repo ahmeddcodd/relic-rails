@@ -1,0 +1,48 @@
+{
+  "assetId": "crystal_cavern_platform",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "environment_modular_track_platform",
+  "description": "Four-metre Blender-authored Crystal Hollow platform with track, filled shoulders, mountains, and walls.",
+  "files": {
+    "runtime": "crystal_cavern_platform.glb",
+    "source": "crystal_cavern_platform.blend",
+    "preview": "crystal_cavern_platform_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "module centre on track basis; repeat every 4 metres",
+  "moduleLengthMetres": 4.0,
+  "boundsBlenderMetres": {
+    "min": [
+      -13.0,
+      -2.6853,
+      -1.2
+    ],
+    "max": [
+      13.0,
+      2.5554,
+      11.75
+    ],
+    "size": [
+      26.0,
+      5.2407,
+      12.95
+    ]
+  },
+  "performance": {
+    "triangles": 2000,
+    "sourceVertices": 1124,
+    "meshPrimitives": 9,
+    "materials": 9,
+    "glbBytes": 168452,
+    "triangleBudget": 3200
+  },
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "allPass": true
+  }
+}

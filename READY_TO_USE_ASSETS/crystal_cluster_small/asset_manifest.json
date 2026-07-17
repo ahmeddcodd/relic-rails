@@ -1,0 +1,67 @@
+{
+  "assetId": "crystal_cluster_small",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "environment_prop",
+  "description": "Small wall-integrated cyan/violet crystal formation.",
+  "files": {
+    "runtime": "crystal_cluster_small.glb",
+    "source": "crystal_cluster_small.blend",
+    "preview": "crystal_cluster_small_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "rock/floor attachment point",
+  "boundsBlenderMetres": {
+    "min": [
+      -0.7419,
+      -0.32,
+      -0.1283
+    ],
+    "max": [
+      0.7344,
+      0.4073,
+      1.5981
+    ],
+    "size": [
+      1.4763,
+      0.7273,
+      1.7264
+    ]
+  },
+  "performance": {
+    "triangles": 120,
+    "sourceVertices": 72,
+    "meshPrimitives": 3,
+    "materials": 3,
+    "glbBytes": 13412,
+    "triangleBudget": 700
+  },
+  "meshes": [
+    "GEO_cyan",
+    "GEO_violet",
+    "GEO_stonedark"
+  ],
+  "materials": [
+    "MAT_Cyan",
+    "MAT_StoneDark",
+    "MAT_Violet"
+  ],
+  "sockets": [],
+  "animation": {
+    "fps": 30,
+    "library": null,
+    "clips": []
+  },
+  "runtimeNotes": [
+    "Keep clusters against cavern surfaces so they do not resemble collectible trails."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

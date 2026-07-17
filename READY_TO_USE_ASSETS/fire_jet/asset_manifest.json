@@ -1,0 +1,87 @@
+{
+  "assetId": "fire_jet",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "obstacle",
+  "description": "Forge vent with layered animated flame meshes and runtime particle sockets.",
+  "files": {
+    "runtime": "fire_jet.glb",
+    "source": "fire_jet.blend",
+    "preview": "fire_jet_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "lane centre on ground",
+  "boundsBlenderMetres": {
+    "min": [
+      -0.4502,
+      -0.4492,
+      0.0
+    ],
+    "max": [
+      0.4502,
+      0.4492,
+      2.5343
+    ],
+    "size": [
+      0.9004,
+      0.8984,
+      2.5343
+    ]
+  },
+  "performance": {
+    "triangles": 312,
+    "sourceVertices": 162,
+    "meshPrimitives": 4,
+    "materials": 4,
+    "glbBytes": 28640,
+    "triangleBudget": 1200
+  },
+  "meshes": [
+    "GEO_iron",
+    "GEO_copper",
+    "ANIM_flame",
+    "ANIM_flame_core"
+  ],
+  "materials": [
+    "MAT_Copper",
+    "MAT_GoldCore",
+    "MAT_Iron",
+    "MAT_Magma"
+  ],
+  "sockets": [
+    "SOCKET_fire_particles",
+    "SOCKET_heat_haze"
+  ],
+  "animation": {
+    "fps": 30,
+    "library": "fire_jet_action_library",
+    "clips": [
+      {
+        "name": "flame_loop",
+        "start": 1,
+        "end": 30,
+        "loop": true,
+        "description": "Asymmetric low-poly flame pulse."
+      },
+      {
+        "name": "burst",
+        "start": 45,
+        "end": 80,
+        "loop": false,
+        "description": "Rapid ignition, sustained jet, and shutdown."
+      }
+    ]
+  },
+  "runtimeNotes": [
+    "Use runtime particles and heat distortion for close-range richness."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

@@ -4,3 +4,6 @@ dist/
 .DS_Store
 .vercel/
 *.zip
+__pycache__/
+*.py[cod]
+*.log

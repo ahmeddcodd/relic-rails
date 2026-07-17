@@ -1,0 +1,71 @@
+{
+  "assetId": "broken_rail",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "obstacle",
+  "description": "Splintered gap marker with bent rails and warning lamp.",
+  "files": {
+    "runtime": "broken_rail.glb",
+    "source": "broken_rail.blend",
+    "preview": "broken_rail_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "lane centre at gap leading edge",
+  "boundsBlenderMetres": {
+    "min": [
+      -1.13,
+      -0.8145,
+      -0.0217
+    ],
+    "max": [
+      0.7852,
+      0.5874,
+      1.38
+    ],
+    "size": [
+      1.9152,
+      1.402,
+      1.4017
+    ]
+  },
+  "performance": {
+    "triangles": 292,
+    "sourceVertices": 158,
+    "meshPrimitives": 4,
+    "materials": 4,
+    "glbBytes": 23864,
+    "triangleBudget": 1100
+  },
+  "meshes": [
+    "GEO_wooddark",
+    "GEO_iron",
+    "GEO_wood",
+    "GEO_hazard"
+  ],
+  "materials": [
+    "MAT_Hazard",
+    "MAT_Iron",
+    "MAT_Wood",
+    "MAT_WoodDark"
+  ],
+  "sockets": [
+    "SOCKET_falling_dust"
+  ],
+  "animation": {
+    "fps": 30,
+    "library": null,
+    "clips": []
+  },
+  "runtimeNotes": [
+    "The actual gap collision is track-space geometry; this mesh marks its leading edge."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

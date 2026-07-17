@@ -2,7 +2,10 @@
 import { readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-const DIST = new URL('../dist', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
+import { fileURLToPath } from 'node:url';
+// fileURLToPath handles Windows drive letters AND percent-decoding (spaces in
+// the path became %20 with the old manual .pathname approach).
+const DIST = fileURLToPath(new URL('../dist', import.meta.url));
 const LIMITS = {
   totalBytes: 250 * 1024 * 1024,
   initialIdealBytes: 15 * 1024 * 1024,

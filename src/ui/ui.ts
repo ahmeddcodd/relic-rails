@@ -9,8 +9,7 @@ export interface UICallbacks {
   onRideAgain(): void;
   onToMenu(): void;
   onOverdrive(): void;
-  onResume(): void;
-  onSettingChanged(key: 'music' | 'sfx' | 'haptics' | 'reducedFx', value: boolean): void;
+  onSettingChanged(key: 'haptics' | 'reducedFx', value: boolean): void;
   getSettings(): SaveData['settings'];
 }
 
@@ -76,7 +75,6 @@ export class UI {
   private menu: HTMLElement;
   private hud: HTMLElement;
   private results: HTMLElement;
-  private pause: HTMLElement;
   private settings: HTMLElement;
   private vignette: HTMLElement;
   private flash: HTMLElement;
@@ -170,13 +168,8 @@ export class UI {
     this.results = el('div', 'screen hidden', this.root);
     this.results.id = 'results';
 
-    // --- Pause
-    this.pause = el('div', 'screen hidden', this.root);
-    this.pause.id = 'pause';
-    const pp = el('div', 'panel', this.pause);
-    el('h2', '', pp, 'PAUSED');
-    const resume = el('button', 'btn-primary', pp, 'RESUME');
-    resume.addEventListener('click', () => this.cb.onResume());
+    // Pause/resume is fully controlled by YouTube Playables — no in-game pause
+    // overlay or resume button. The platform renders its own pause UI.
 
     // --- Settings
     this.settings = el('div', 'screen hidden', this.root);
@@ -213,10 +206,6 @@ export class UI {
     }
   }
 
-  showPause(on: boolean): void {
-    this.show(this.pause, on);
-  }
-
   showResults(on: boolean, d?: ResultsData): void {
     if (on && d) {
       this.results.innerHTML = '';
@@ -244,9 +233,10 @@ export class UI {
       const p = el('div', 'panel', this.settings);
       el('h2', '', p, 'SETTINGS');
       const s = this.cb.getSettings();
-      const rows: Array<['music' | 'sfx' | 'haptics' | 'reducedFx', string]> = [
-        ['music', 'Music'],
-        ['sfx', 'Sound effects'],
+      // Music/SFX are intentionally NOT here — audio is governed by YouTube's
+      // own mute control (isAudioEnabled / onAudioEnabledChange). Showing a
+      // second in-game mute would violate the Playables audio policy.
+      const rows: Array<['haptics' | 'reducedFx', string]> = [
         ['haptics', 'Haptics'],
         ['reducedFx', 'Reduced effects'],
       ];

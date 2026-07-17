@@ -1,0 +1,50 @@
+{
+  "assetId": "timber_support_arch",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "type": "environment_modular_support",
+  "runtimeFile": "timber_support_arch.glb",
+  "sourceFile": "timber_support_arch.blend",
+  "previewFile": "timber_support_arch_preview.png",
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "origin": "ground centre on track centreline",
+  "dimensionsMetres": {
+    "width": 14.68,
+    "depth": 0.91,
+    "height": 8.6577
+  },
+  "clearanceMetres": {
+    "width": 12.0,
+    "height": 6.35
+  },
+  "performance": {
+    "triangles": 1236,
+    "meshPrimitives": 3,
+    "materials": 3,
+    "glbBytes": 91032
+  },
+  "meshes": [
+    "GEO_wood_primary",
+    "GEO_wood_dark",
+    "GEO_iron"
+  ],
+  "materials": [
+    "MAT_Wood_Primary",
+    "MAT_Wood_Dark",
+    "MAT_Iron_Dark"
+  ],
+  "sockets": [
+    "SOCKET_torch_left",
+    "SOCKET_torch_right",
+    "SOCKET_dust_left",
+    "SOCKET_dust_right",
+    "SOCKET_apex_fx"
+  ],
+  "animation": {
+    "mode": "static_runtime_fx_sockets",
+    "clips": []
+  },
+  "validation": "passed"
+}

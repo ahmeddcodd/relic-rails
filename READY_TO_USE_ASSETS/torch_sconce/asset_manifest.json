@@ -1,0 +1,79 @@
+{
+  "assetId": "torch_sconce",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "environment_prop",
+  "description": "Iron wall sconce with timber handle and animated low-poly flame.",
+  "files": {
+    "runtime": "torch_sconce.glb",
+    "source": "torch_sconce.blend",
+    "preview": "torch_sconce_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "wall attachment point at root",
+  "boundsBlenderMetres": {
+    "min": [
+      -0.225,
+      -0.3593,
+      0.3336
+    ],
+    "max": [
+      0.225,
+      0.14,
+      1.819
+    ],
+    "size": [
+      0.45,
+      0.4993,
+      1.4854
+    ]
+  },
+  "performance": {
+    "triangles": 208,
+    "sourceVertices": 110,
+    "meshPrimitives": 3,
+    "materials": 3,
+    "glbBytes": 19972,
+    "triangleBudget": 800
+  },
+  "meshes": [
+    "GEO_iron",
+    "GEO_wooddark",
+    "ANIM_flame"
+  ],
+  "materials": [
+    "MAT_GoldCore",
+    "MAT_Iron",
+    "MAT_WoodDark"
+  ],
+  "sockets": [
+    "SOCKET_point_light",
+    "SOCKET_smoke"
+  ],
+  "animation": {
+    "fps": 30,
+    "library": "torch_sconce_action_library",
+    "clips": [
+      {
+        "name": "flame_flicker_loop",
+        "start": 1,
+        "end": 45,
+        "loop": true,
+        "description": "Irregular but seamless flame movement."
+      }
+    ]
+  },
+  "runtimeNotes": [
+    "Use a pooled runtime light at SOCKET_point_light.",
+    "Seed clip playback offset per instance to avoid synchronization."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

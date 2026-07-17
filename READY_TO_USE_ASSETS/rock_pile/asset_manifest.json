@@ -1,0 +1,65 @@
+{
+  "assetId": "rock_pile",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "obstacle",
+  "description": "Layered low-poly rock pile with a clear red jump telegraph.",
+  "files": {
+    "runtime": "rock_pile.glb",
+    "source": "rock_pile.blend",
+    "preview": "rock_pile_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "lane centre on ground",
+  "boundsBlenderMetres": {
+    "min": [
+      -0.9451,
+      -0.6171,
+      -0.0675
+    ],
+    "max": [
+      0.8256,
+      0.5784,
+      1.36
+    ],
+    "size": [
+      1.7707,
+      1.1955,
+      1.4275
+    ]
+  },
+  "performance": {
+    "triangles": 120,
+    "sourceVertices": 72,
+    "meshPrimitives": 3,
+    "materials": 3,
+    "glbBytes": 15584,
+    "triangleBudget": 850
+  },
+  "meshes": [
+    "GEO_stone",
+    "GEO_stonedark",
+    "GEO_hazard"
+  ],
+  "materials": [
+    "MAT_Hazard",
+    "MAT_Stone",
+    "MAT_StoneDark"
+  ],
+  "sockets": [],
+  "animation": {
+    "fps": 30,
+    "library": null,
+    "clips": []
+  },
+  "runtimeNotes": [],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "assetId": "low_beam",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "obstacle",
+  "description": "Measured duck obstacle with timber supports, red warning bar, and swaying chains.",
+  "files": {
+    "runtime": "low_beam.glb",
+    "source": "low_beam.blend",
+    "preview": "low_beam_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "lane centre on ground",
+  "boundsBlenderMetres": {
+    "min": [
+      -1.5153,
+      -0.35,
+      0.0985
+    ],
+    "max": [
+      1.5152,
+      0.2162,
+      2.8276
+    ],
+    "size": [
+      3.0305,
+      0.5662,
+      2.7291
+    ]
+  },
+  "performance": {
+    "triangles": 284,
+    "sourceVertices": 156,
+    "meshPrimitives": 6,
+    "materials": 4,
+    "glbBytes": 26216,
+    "triangleBudget": 1400
+  },
+  "meshes": [
+    "GEO_wood",
+    "GEO_wooddark",
+    "GEO_hazard",
+    "ANIM_chain_0",
+    "ANIM_chain_1",
+    "ANIM_chain_2"
+  ],
+  "materials": [
+    "MAT_Hazard",
+    "MAT_Iron",
+    "MAT_Wood",
+    "MAT_WoodDark"
+  ],
+  "sockets": [],
+  "animation": {
+    "fps": 30,
+    "library": "low_beam_action_library",
+    "clips": [
+      {
+        "name": "chain_sway_loop",
+        "start": 1,
+        "end": 60,
+        "loop": true,
+        "description": "Offset weighty warning-chain motion."
+      }
+    ]
+  },
+  "runtimeNotes": [
+    "Rigid clearance is 2.25 m above the rail plane: a 2.95 m standing rider collides and a 2.18 m crouched rider clears.",
+    "The beam silhouette must remain fixed; only chains animate."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

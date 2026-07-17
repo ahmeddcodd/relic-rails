@@ -10,6 +10,14 @@ export interface BiomePalette {
   fogNear: number;   // fraction of far plane
   fogFar: number;
   sky: number;       // renderer clear color
+  skyTop: number;
+  skyHorizon: number;
+  skyBottom: number;
+  skyAccent: number;
+  sunColor: number;
+  sunStrength: number;
+  starStrength: number;
+  cloudStrength: number;
   hemiSky: number;
   hemiGround: number;
   keyLight: number;
@@ -34,6 +42,9 @@ export const BIOMES: BiomePalette[] = [
     name: 'Crystal Hollow',
     fog: 0x140c28, fogNear: 0.22, fogFar: 124,
     sky: 0x0d0820,
+    skyTop: 0x050218, skyHorizon: 0x42206f, skyBottom: 0x090624,
+    skyAccent: 0x32e8df, sunColor: 0xa8fff7,
+    sunStrength: 0.16, starStrength: 0.9, cloudStrength: 0.32,
     hemiSky: 0x8f74ff, hemiGround: 0x120d24,
     keyLight: 0xb0c4ff, keyIntensity: 2.1,
     ground: 0x453c72, groundAlt: 0x38305c,
@@ -48,6 +59,9 @@ export const BIOMES: BiomePalette[] = [
     name: 'Timber Maw Mine',
     fog: 0x2a1608, fogNear: 0.25, fogFar: 105,
     sky: 0x1a0d05,
+    skyTop: 0x100402, skyHorizon: 0x6b2a09, skyBottom: 0x1d0903,
+    skyAccent: 0xff7626, sunColor: 0xffc06b,
+    sunStrength: 0.18, starStrength: 0.08, cloudStrength: 0.22,
     hemiSky: 0xffa95e, hemiGround: 0x2b1408,
     keyLight: 0xffc07a, keyIntensity: 2.4,
     ground: 0x6b4a30, groundAlt: 0x573b22,
@@ -62,6 +76,9 @@ export const BIOMES: BiomePalette[] = [
     name: 'Flooded Ravine',
     fog: 0xe8935e, fogNear: 0.35, fogFar: 150,
     sky: 0xff9e63,
+    skyTop: 0x456fbd, skyHorizon: 0xffaa67, skyBottom: 0xa84261,
+    skyAccent: 0xffdfb0, sunColor: 0xfff0b0,
+    sunStrength: 1.0, starStrength: 0.0, cloudStrength: 0.75,
     hemiSky: 0xffc48f, hemiGround: 0x3c4a3a,
     keyLight: 0xffd9a8, keyIntensity: 2.8,
     ground: 0x55604a, groundAlt: 0x47523d,
@@ -76,6 +93,9 @@ export const BIOMES: BiomePalette[] = [
     name: 'Ember Forge',
     fog: 0x330d02, fogNear: 0.22, fogFar: 110,
     sky: 0x1c0602,
+    skyTop: 0x090106, skyHorizon: 0x7c1b07, skyBottom: 0x1b0202,
+    skyAccent: 0xff4311, sunColor: 0xffa23c,
+    sunStrength: 0.42, starStrength: 0.32, cloudStrength: 0.55,
     hemiSky: 0xff6a2a, hemiGround: 0x1e0a04,
     keyLight: 0xff9448, keyIntensity: 2.2,
     ground: 0x4d4846, groundAlt: 0x3c3836,

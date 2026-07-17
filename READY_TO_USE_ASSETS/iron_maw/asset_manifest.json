@@ -1,0 +1,105 @@
+{
+  "assetId": "iron_maw",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "chase_guardian",
+  "description": "Ancient mechanical guardian with grinders, crushing jaw, and red pursuit eyes.",
+  "files": {
+    "runtime": "iron_maw.glb",
+    "source": "iron_maw.blend",
+    "preview": "iron_maw_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "ground centre behind the player",
+  "boundsBlenderMetres": {
+    "min": [
+      -4.1029,
+      -2.631,
+      0.5617
+    ],
+    "max": [
+      4.1029,
+      1.57,
+      5.15
+    ],
+    "size": [
+      8.2058,
+      4.201,
+      4.5883
+    ]
+  },
+  "performance": {
+    "triangles": 780,
+    "sourceVertices": 432,
+    "meshPrimitives": 13,
+    "materials": 5,
+    "glbBytes": 82256,
+    "triangleBudget": 8000
+  },
+  "meshes": [
+    "GEO_copper",
+    "GEO_ironlight",
+    "ANIM_body",
+    "ANIM_lower_jaw",
+    "ANIM_grinder_0",
+    "ANIM_grinder_1",
+    "ANIM_grinder_2",
+    "ANIM_grinder_3",
+    "ANIM_grinder_4",
+    "ANIM_arm_L",
+    "ANIM_eye_L",
+    "ANIM_arm_R",
+    "ANIM_eye_R"
+  ],
+  "materials": [
+    "MAT_Copper",
+    "MAT_Eye",
+    "MAT_Iron",
+    "MAT_IronLight",
+    "MAT_Maw"
+  ],
+  "sockets": [
+    "SOCKET_dust_wake",
+    "SOCKET_mouth_fx"
+  ],
+  "animation": {
+    "fps": 30,
+    "library": "iron_maw_action_library",
+    "clips": [
+      {
+        "name": "chase_loop",
+        "start": 1,
+        "end": 60,
+        "loop": true,
+        "description": "Heavy pursuit bob, jaw chatter, and counter-rotating grinders."
+      },
+      {
+        "name": "lunge",
+        "start": 70,
+        "end": 105,
+        "loop": false,
+        "description": "Anticipation, forward surge, jaw opening, and recoil."
+      },
+      {
+        "name": "catch",
+        "start": 120,
+        "end": 160,
+        "loop": false,
+        "description": "Wide bite followed by crushing closure."
+      }
+    ]
+  },
+  "runtimeNotes": [
+    "Runtime chase pressure controls distance and scale visibility.",
+    "Eye emission and dust intensity may be driven by pressure."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}
