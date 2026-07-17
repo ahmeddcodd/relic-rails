@@ -1,0 +1,145 @@
+{
+  "assetId": "rin_vale",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "hero_character",
+  "description": "Low-poly Emberdeep scavenger hero with scarf, goggles silhouette, and relic backpack.",
+  "files": {
+    "runtime": "rin_vale.glb",
+    "source": "rin_vale.blend",
+    "preview": "rin_vale_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "between the feet at ground level",
+  "boundsBlenderMetres": {
+    "min": [
+      -0.4601,
+      -0.2883,
+      0.235
+    ],
+    "max": [
+      0.4601,
+      0.4134,
+      1.7037
+    ],
+    "size": [
+      0.9202,
+      0.7016,
+      1.4687
+    ]
+  },
+  "performance": {
+    "triangles": 704,
+    "sourceVertices": 390,
+    "meshPrimitives": 18,
+    "materials": 8,
+    "glbBytes": 124072,
+    "triangleBudget": 4200
+  },
+  "meshes": [
+    "GEO_iron",
+    "ANIM_torso",
+    "ANIM_pelvis",
+    "ANIM_head",
+    "ANIM_hair_cap",
+    "ANIM_scarf",
+    "ANIM_ponytail",
+    "ANIM_scarf_tail",
+    "ANIM_backpack",
+    "ANIM_goggle_lens_l",
+    "ANIM_goggle_lens_r",
+    "ANIM_goggle_bridge",
+    "ANIM_jacket_trim_l",
+    "ANIM_jacket_trim_r",
+    "ANIM_arm_L",
+    "ANIM_hand_L",
+    "ANIM_arm_R",
+    "ANIM_hand_R"
+  ],
+  "materials": [
+    "MAT_Blue",
+    "MAT_Copper",
+    "MAT_Hair",
+    "MAT_Iron",
+    "MAT_Jacket",
+    "MAT_Scarf",
+    "MAT_Skin",
+    "MAT_WoodDark"
+  ],
+  "sockets": [],
+  "animation": {
+    "fps": 30,
+    "library": "rin_vale_action_library",
+    "clips": [
+      {
+        "name": "idle_cart",
+        "start": 1,
+        "end": 60,
+        "loop": true,
+        "description": "Balanced breathing, head counter-motion, and scarf follow-through."
+      },
+      {
+        "name": "lean_left",
+        "start": 70,
+        "end": 90,
+        "loop": false,
+        "description": "Fast readable left commitment and return."
+      },
+      {
+        "name": "lean_right",
+        "start": 100,
+        "end": 120,
+        "loop": false,
+        "description": "Mirrored right commitment and return."
+      },
+      {
+        "name": "jump",
+        "start": 130,
+        "end": 170,
+        "loop": false,
+        "description": "Anticipation, arm lift, airborne pose, and landing settle."
+      },
+      {
+        "name": "duck",
+        "start": 180,
+        "end": 210,
+        "loop": false,
+        "description": "Compressed silhouette held through the clearance window."
+      },
+      {
+        "name": "stumble",
+        "start": 220,
+        "end": 250,
+        "loop": false,
+        "description": "Two-stage balance recovery."
+      },
+      {
+        "name": "crash",
+        "start": 260,
+        "end": 310,
+        "loop": false,
+        "description": "Large readable tumble pose."
+      },
+      {
+        "name": "celebrate",
+        "start": 320,
+        "end": 360,
+        "loop": false,
+        "description": "Two-arm victory gesture with settle."
+      }
+    ]
+  },
+  "runtimeNotes": [
+    "Attach the root to the minecart SOCKET_rider.",
+    "Runtime cart lean may layer over or replace lean clips."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

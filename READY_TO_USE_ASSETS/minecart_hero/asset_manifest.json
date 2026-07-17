@@ -1,0 +1,105 @@
+{
+  "assetId": "minecart_hero",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "hero_vehicle",
+  "description": "Hero Emberdeep minecart with copper trim and Sunheart lantern.",
+  "files": {
+    "runtime": "minecart_hero.glb",
+    "source": "minecart_hero.blend",
+    "preview": "minecart_hero_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "between wheel contact points at rail height",
+  "boundsBlenderMetres": {
+    "min": [
+      -0.96,
+      -1.35,
+      0.045
+    ],
+    "max": [
+      0.96,
+      1.09,
+      1.455
+    ],
+    "size": [
+      1.92,
+      2.44,
+      1.41
+    ]
+  },
+  "performance": {
+    "triangles": 1140,
+    "sourceVertices": 610,
+    "meshPrimitives": 8,
+    "materials": 4,
+    "glbBytes": 98108,
+    "triangleBudget": 4200
+  },
+  "meshes": [
+    "GEO_ironlight",
+    "GEO_copper",
+    "GEO_iron",
+    "ANIM_wheel_FL",
+    "ANIM_wheel_FR",
+    "ANIM_wheel_RL",
+    "ANIM_wheel_RR",
+    "ANIM_sunheart_lantern"
+  ],
+  "materials": [
+    "MAT_Copper",
+    "MAT_GoldCore",
+    "MAT_Iron",
+    "MAT_IronLight"
+  ],
+  "sockets": [
+    "SOCKET_rider"
+  ],
+  "animation": {
+    "fps": 30,
+    "library": "minecart_hero_action_library",
+    "clips": [
+      {
+        "name": "idle_loop",
+        "start": 1,
+        "end": 60,
+        "loop": true,
+        "description": "Subtle suspension breathing and Sunheart pulse."
+      },
+      {
+        "name": "wheel_spin_loop",
+        "start": 70,
+        "end": 100,
+        "loop": true,
+        "description": "One full consistent wheel revolution."
+      },
+      {
+        "name": "suspension_hit",
+        "start": 110,
+        "end": 145,
+        "loop": false,
+        "description": "Compression, overshoot, and settle."
+      },
+      {
+        "name": "crash",
+        "start": 160,
+        "end": 210,
+        "loop": false,
+        "description": "Readable airborne roll and ground settle."
+      }
+    ]
+  },
+  "runtimeNotes": [
+    "Runtime gameplay may override wheel spin, lean, jump trajectory, and crash transform.",
+    "Attach Rin to SOCKET_rider."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "assetId": "forge_pipe",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "environment_prop",
+  "description": "Black-iron forge pipe with copper valve and pulsing heat vent.",
+  "files": {
+    "runtime": "forge_pipe.glb",
+    "source": "forge_pipe.blend",
+    "preview": "forge_pipe_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "ground/wall attachment centre",
+  "boundsBlenderMetres": {
+    "min": [
+      -0.5433,
+      -0.566,
+      0.0
+    ],
+    "max": [
+      0.5433,
+      0.57,
+      5.0
+    ],
+    "size": [
+      1.0865,
+      1.136,
+      5.0
+    ]
+  },
+  "performance": {
+    "triangles": 936,
+    "sourceVertices": 486,
+    "meshPrimitives": 10,
+    "materials": 4,
+    "glbBytes": 67092,
+    "triangleBudget": 2200
+  },
+  "meshes": [
+    "GEO_iron",
+    "GEO_ironlight",
+    "ANIM_valve_wheel",
+    "ANIM_ValveSpoke_0",
+    "ANIM_ValveSpoke_1",
+    "ANIM_ValveSpoke_2",
+    "ANIM_ValveSpoke_3",
+    "ANIM_ValveSpoke_4",
+    "ANIM_ValveSpoke_5",
+    "ANIM_vent_glow"
+  ],
+  "materials": [
+    "MAT_Copper",
+    "MAT_Iron",
+    "MAT_IronLight",
+    "MAT_Magma"
+  ],
+  "sockets": [
+    "SOCKET_steam",
+    "SOCKET_heat_light"
+  ],
+  "animation": {
+    "fps": 30,
+    "library": "forge_pipe_action_library",
+    "clips": [
+      {
+        "name": "valve_vent_loop",
+        "start": 1,
+        "end": 60,
+        "loop": true,
+        "description": "Slow valve rotation and offset heat pulse."
+      }
+    ]
+  },
+  "runtimeNotes": [
+    "Steam particles are emitted from SOCKET_steam."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

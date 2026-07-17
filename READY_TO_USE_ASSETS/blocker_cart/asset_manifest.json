@@ -1,0 +1,69 @@
+{
+  "assetId": "blocker_cart",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "obstacle",
+  "description": "Reinforced ore cart obstacle with a hot-red gameplay warning stripe.",
+  "files": {
+    "runtime": "blocker_cart.glb",
+    "source": "blocker_cart.blend",
+    "preview": "blocker_cart_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "lane centre at rail height",
+  "boundsBlenderMetres": {
+    "min": [
+      -0.86,
+      -1.04,
+      0.0332
+    ],
+    "max": [
+      0.86,
+      0.99,
+      1.8297
+    ],
+    "size": [
+      1.72,
+      2.03,
+      1.7965
+    ]
+  },
+  "performance": {
+    "triangles": 380,
+    "sourceVertices": 212,
+    "meshPrimitives": 4,
+    "materials": 4,
+    "glbBytes": 32148,
+    "triangleBudget": 2200
+  },
+  "meshes": [
+    "GEO_copper",
+    "GEO_iron",
+    "GEO_hazard",
+    "GEO_stone"
+  ],
+  "materials": [
+    "MAT_Copper",
+    "MAT_Hazard",
+    "MAT_Iron",
+    "MAT_Stone"
+  ],
+  "sockets": [],
+  "animation": {
+    "fps": 30,
+    "library": null,
+    "clips": []
+  },
+  "runtimeNotes": [
+    "Static lane-blocking obstacle."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

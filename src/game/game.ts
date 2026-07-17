@@ -17,7 +17,6 @@ import { ObstacleManager, CollectibleManager, OBSTACLE_SPECS, type PowerupKind }
 import { CartController } from './cart';
 import { CameraRig } from './camera';
 import { Director, validatePlan } from './director';
-import { ForkVisual } from './fork';
 import { ScoreSystem, OverdriveSystem, PowerUpSystem, ChaseSystem, COMBO_NAMES } from './systems';
 import { UI, rankFor } from '../ui/ui';
 
@@ -25,8 +24,6 @@ type State = 'loading' | 'menu' | 'running' | 'crashing' | 'results';
 
 const tmpV = new THREE.Vector3();
 const DEV = import.meta.env.DEV;
-const FORK_REVEAL_DIST = 100; // metres before the split that both branches appear
-const FORK_COMMIT_LEAD = 15; // metres before the split that the choice locks in
 
 export class Game {
   private bridge: PlatformBridge;
@@ -45,14 +42,12 @@ export class Game {
   private cart: CartController;
   private camera: CameraRig;
   private chase: ChaseSystem;
-  private forkVisual!: ForkVisual;
   private score = new ScoreSystem();
   private od = new OverdriveSystem();
   private pu = new PowerUpSystem();
 
   private state: State = 'loading';
   private paused = false;
-  private pausedByPlatform = false;
   private lastT = 0;
   private runSeed = 1;
   private crashTimer = 0;
@@ -67,8 +62,6 @@ export class Game {
   private tutorialStep = 0;
   private menuOrbit = 0;
   private validateTimer = 0;
-  private forkShown = false;
-  private lastForkSide: -1 | 1 = -1;
 
   constructor(canvas: HTMLCanvasElement) {
     this.bridge = createBridge();
@@ -82,7 +75,6 @@ export class Game {
     this.director = new Director(this.path, this.obstacles, this.collectibles);
     this.view = new TrackView(this.path, this.gfx.scene, this.director.biomeAt, this.gfx.quality);
     this.chase = new ChaseSystem(this.path, this.gfx.scene);
-    this.forkVisual = new ForkVisual(this.path, this.gfx.scene);
     this.cart = new CartController(this.path, this.gfx.scene, {
       onSwitch: (dir) => {
         this.lastSwitchAt = performance.now() / 1000;
@@ -113,7 +105,6 @@ export class Game {
       onRideAgain: () => this.startRun(),
       onToMenu: () => this.toMenu(),
       onOverdrive: () => this.tryOverdrive(),
-      onResume: () => this.setPaused(false, false),
       onSettingChanged: (k, v) => {
         this.save.data.settings[k] = v;
         this.applySettings();
@@ -122,11 +113,11 @@ export class Game {
       getSettings: () => this.save.data.settings,
     });
 
-    // Platform lifecycle
-    this.bridge.onPause(() => this.setPaused(true, true));
-    this.bridge.onResume(() => {
-      if (this.pausedByPlatform) this.setPaused(false, true);
-    });
+    // Platform lifecycle — pause/resume is driven EXCLUSIVELY by YouTube.
+    // We MUST pause on onPause and resume only on onResume (never the Page
+    // Visibility API in the real bridge; LocalBridge mirrors it for dev only).
+    this.bridge.onPause(() => this.setPaused(true));
+    this.bridge.onResume(() => this.setPaused(false));
     void this.bridge.isAudioEnabled().then((on) => {
       this.audio.platformAudio = on;
       this.audio.applyMix();
@@ -179,8 +170,10 @@ export class Game {
 
   private applySettings(): void {
     const s = this.save.data.settings;
-    this.audio.musicOn = s.music;
-    this.audio.sfxOn = s.sfx;
+    // Audio on/off is owned by YouTube (platformAudio via isAudioEnabled). The
+    // in-game music/sfx flags stay enabled; the platform gate is the only mute.
+    this.audio.musicOn = true;
+    this.audio.sfxOn = true;
     this.audio.applyMix();
     this.camera.reducedShake = s.reducedFx;
   }
@@ -217,12 +210,10 @@ export class Game {
     this.od.reset();
     this.pu.reset();
     this.chase.reset();
-    this.forkVisual.reset();
-    this.forkShown = false;
     this.ui.tutorialPrompt(null);
     this.particles.clear();
-    this.biomeIdx = 0;
-    this.gfx.setBiome(BIOMES[0], true);
+    this.biomeIdx = this.director.biomeAt(0);
+    this.gfx.setBiome(BIOMES[this.biomeIdx], true);
     this.view.update(0);
     this.cart.update(0.0001); // apply initial transform
     this.camera.snap(this.cart);
@@ -277,16 +268,14 @@ export class Game {
     });
   }
 
-  private setPaused(on: boolean, byPlatform: boolean): void {
+  private setPaused(on: boolean): void {
     if (on === this.paused) return;
     this.paused = on;
-    this.pausedByPlatform = on && byPlatform;
     if (on) {
+      // Pause ALL execution: the frame loop early-returns, and audio suspends.
       this.audio.pause();
-      this.ui.showPause(this.state === 'running' || this.state === 'crashing');
     } else {
       this.audio.resume();
-      this.ui.showPause(false);
       this.lastT = performance.now(); // don't integrate the paused gap
     }
   }
@@ -336,6 +325,8 @@ export class Game {
   private updateMenu(dt: number): void {
     // Slow showcase orbit around the cart.
     this.menuOrbit += dt * 0.25;
+    this.view.update(this.cart.dist, dt);
+    this.cart.animateIdle(dt);
     const r = 7.5;
     this.path.getPoint(this.cart.dist, 0, tmpV);
     this.gfx.camera.position.set(
@@ -347,7 +338,8 @@ export class Game {
     this.input.drain();
   }
 
-  private updateMenuish(_dt: number): void {
+  private updateMenuish(dt: number): void {
+    this.view.update(this.cart.dist, dt);
     this.input.drain();
   }
 
@@ -359,31 +351,9 @@ export class Game {
       } else if (a === 'overdrive') {
         this.tryOverdrive();
       } else if (a === 'pause' && !this.bridge.isYouTube) {
-        this.setPaused(true, false);
-      }
-    }
-
-    // Fork: reveal the split as it nears, then lock in the player's chosen side
-    // BEFORE director.update so the path branches this same frame.
-    if (this.director.forkPending) {
-      const j = this.director.forkDist;
-      if (!this.forkShown && this.cart.dist > j - FORK_REVEAL_DIST) {
-        this.forkShown = true;
-        this.forkVisual.showSplit(j, BIOMES[this.director.biomeAt(j)].wall);
-        this.ui.tutorialPrompt('<span class="big">◀   ▶</span>PICK A PATH — swipe left or right');
-        this.audio.powerup();
-      }
-      if (this.cart.dist > j - FORK_COMMIT_LEAD) {
-        const lane = this.cart.laneIdx;
-        const side: -1 | 1 = lane === 0 ? -1 : lane === 2 ? 1 : this.lastForkSide;
-        this.lastForkSide = side;
-        this.director.commitFork(side);
-        this.forkVisual.commit(side);
-        this.forkShown = false;
-        this.ui.tutorialPrompt(null);
-        this.ui.skillLabel(side < 0 ? 'LEFT PATH!' : 'RIGHT PATH!', 'tier');
-        this.audio.switch();
-        this.haptic(18);
+        // Dev-only convenience toggle (there is no in-game pause UI). On the
+        // real platform pause is owned entirely by YouTube, never by input.
+        this.setPaused(!this.paused);
       }
     }
 
@@ -391,8 +361,7 @@ export class Game {
     this.director.update(dt, this.cart.dist);
     this.cart.targetSpeed = this.director.targetSpeed;
     this.cart.update(dt);
-    this.view.update(this.cart.dist);
-    this.forkVisual.update(this.cart.dist);
+    this.view.update(this.cart.dist, dt);
     this.obstacles.update(dt, this.cart.dist);
     this.pu.update(dt);
     if (this.od.update(dt)) {
@@ -556,7 +525,7 @@ export class Game {
         // rise or the descent. Landing on it (grounded mid-overlap) still fails.
         const cleared =
           (spec.action === 'jump' && this.cart.airborne) ||
-          (spec.action === 'duck' && this.cart.ducking) ||
+          (spec.action === 'duck' && this.cart.riderTop <= spec.clearHeight) ||
           (spec.action === 'none' && (this.cart.airborne || this.cart.y >= spec.clearHeight));
         if (!cleared) {
           // Ghost wheels phase through gaps/debris; overdrive shreds debris.
@@ -682,7 +651,7 @@ export class Game {
   private startCrash(): void {
     this.state = 'crashing';
     this.crashTimer = 0;
-    this.ui.tutorialPrompt(null); // clear any fork prompt if we die mid-approach
+    this.ui.tutorialPrompt(null); // clear any prompt if we die mid-approach
     this.cart.startCrash();
     this.score.majorHit();
     this.audio.crash();
@@ -698,7 +667,7 @@ export class Game {
   private updateCrashing(dt: number): void {
     this.crashTimer += dt;
     this.cart.update(dt);
-    this.view.update(this.cart.dist);
+    this.view.update(this.cart.dist, dt);
     this.obstacles.update(dt, this.cart.dist);
     this.chase.update(dt, this.cart.dist, true);
     this.camera.update(dt, this.cart, 1);

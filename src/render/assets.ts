@@ -1,12 +1,273 @@
 // ---------------------------------------------------------------------------
-// Procedural asset library. All models are built from cached primitives with
-// shared materials — no external files, no licensing surface, tiny bundle.
-// Never construct geometries/materials inline elsewhere: use GEO/mat().
+// Authored GLB asset library.
+//
+// Every visible game model is loaded once from READY_TO_USE_ASSETS, then
+// cloned (shared geometries/materials) or instanced. Generic runtime geometry
+// remains here only for transient shadows, shields, glows, and particles.
 // ---------------------------------------------------------------------------
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { COLORS } from './palette';
 
-// --- Shared geometry cache ---------------------------------------------------
+import blockerCartUrl from '../../READY_TO_USE_ASSETS/blocker_cart/blocker_cart.glb?url';
+import brokenRailUrl from '../../READY_TO_USE_ASSETS/broken_rail/broken_rail.glb?url';
+import crystalLargeUrl from '../../READY_TO_USE_ASSETS/crystal_cluster_large/crystal_cluster_large.glb?url';
+import crystalSmallUrl from '../../READY_TO_USE_ASSETS/crystal_cluster_small/crystal_cluster_small.glb?url';
+import crystalSpikesUrl from '../../READY_TO_USE_ASSETS/crystal_spikes/crystal_spikes.glb?url';
+import crystalPlatformUrl from '../../READY_TO_USE_ASSETS/crystal_cavern_platform/crystal_cavern_platform.glb?url';
+import debrisUrl from '../../READY_TO_USE_ASSETS/debris_cluster/debris_cluster.glb?url';
+import emberShardUrl from '../../READY_TO_USE_ASSETS/ember_shard/ember_shard.glb?url';
+import fireJetUrl from '../../READY_TO_USE_ASSETS/fire_jet/fire_jet.glb?url';
+import forgeGearUrl from '../../READY_TO_USE_ASSETS/forge_gear/forge_gear.glb?url';
+import forgePipeUrl from '../../READY_TO_USE_ASSETS/forge_pipe/forge_pipe.glb?url';
+import ironMawUrl from '../../READY_TO_USE_ASSETS/iron_maw/iron_maw.glb?url';
+import lowBeamUrl from '../../READY_TO_USE_ASSETS/low_beam/low_beam.glb?url';
+import minecartUrl from '../../READY_TO_USE_ASSETS/minecart_hero/minecart_hero.glb?url';
+import oncomingCartUrl from '../../READY_TO_USE_ASSETS/oncoming_cart/oncoming_cart.glb?url';
+import gateUrl from '../../READY_TO_USE_ASSETS/portcullis_gate/portcullis_gate.glb?url';
+import frenzyUrl from '../../READY_TO_USE_ASSETS/powerup_frenzy/powerup_frenzy.glb?url';
+import ravinePlatformUrl from '../../READY_TO_USE_ASSETS/flooded_ravine_platform/flooded_ravine_platform.glb?url';
+import ghostUrl from '../../READY_TO_USE_ASSETS/powerup_ghost/powerup_ghost.glb?url';
+import magnetUrl from '../../READY_TO_USE_ASSETS/powerup_magnet/powerup_magnet.glb?url';
+import repairUrl from '../../READY_TO_USE_ASSETS/powerup_repair/powerup_repair.glb?url';
+import shieldUrl from '../../READY_TO_USE_ASSETS/powerup_shield/powerup_shield.glb?url';
+import prismUrl from '../../READY_TO_USE_ASSETS/prism/prism.glb?url';
+import ballastUrl from '../../READY_TO_USE_ASSETS/rail_ballast_cluster/rail_ballast_cluster.glb?url';
+import ravineTreeUrl from '../../READY_TO_USE_ASSETS/ravine_tree/ravine_tree.glb?url';
+import rinUrl from '../../READY_TO_USE_ASSETS/rin_vale/rin_vale.glb?url';
+import rockPileUrl from '../../READY_TO_USE_ASSETS/rock_pile/rock_pile.glb?url';
+import rockWallUrl from '../../READY_TO_USE_ASSETS/rock_wall_cluster/rock_wall_cluster.glb?url';
+import timberArchUrl from '../../READY_TO_USE_ASSETS/timber_support_arch/timber_support_arch.glb?url';
+import timberArchBUrl from '../../READY_TO_USE_ASSETS/timber_support_arch_b/timber_support_arch_b.glb?url';
+import timberArchCUrl from '../../READY_TO_USE_ASSETS/timber_support_arch_c/timber_support_arch_c.glb?url';
+import timberPlatformUrl from '../../READY_TO_USE_ASSETS/timber_mine_platform/timber_mine_platform.glb?url';
+import torchUrl from '../../READY_TO_USE_ASSETS/torch_sconce/torch_sconce.glb?url';
+import waterfallUrl from '../../READY_TO_USE_ASSETS/waterfall_frame/waterfall_frame.glb?url';
+import forgePlatformUrl from '../../READY_TO_USE_ASSETS/ember_forge_platform/ember_forge_platform.glb?url';
+
+export type AssetId =
+  | 'blocker_cart'
+  | 'broken_rail'
+  | 'crystal_cluster_large'
+  | 'crystal_cluster_small'
+  | 'crystal_spikes'
+  | 'crystal_cavern_platform'
+  | 'debris_cluster'
+  | 'ember_shard'
+  | 'fire_jet'
+  | 'forge_gear'
+  | 'forge_pipe'
+  | 'iron_maw'
+  | 'low_beam'
+  | 'minecart_hero'
+  | 'oncoming_cart'
+  | 'portcullis_gate'
+  | 'powerup_frenzy'
+  | 'flooded_ravine_platform'
+  | 'powerup_ghost'
+  | 'powerup_magnet'
+  | 'powerup_repair'
+  | 'powerup_shield'
+  | 'prism'
+  | 'rail_ballast_cluster'
+  | 'ravine_tree'
+  | 'rin_vale'
+  | 'rock_pile'
+  | 'rock_wall_cluster'
+  | 'timber_support_arch'
+  | 'timber_support_arch_b'
+  | 'timber_support_arch_c'
+  | 'timber_mine_platform'
+  | 'torch_sconce'
+  | 'waterfall_frame'
+  | 'ember_forge_platform';
+
+interface ClipRange {
+  start: number;
+  end: number;
+  loop: boolean;
+}
+
+interface AssetDef {
+  url: string;
+  clips?: Record<string, ClipRange>;
+}
+
+const loop = (start: number, end: number): ClipRange => ({ start, end, loop: true });
+const once = (start: number, end: number): ClipRange => ({ start, end, loop: false });
+
+const ASSET_DEFS: Record<AssetId, AssetDef> = {
+  blocker_cart: { url: blockerCartUrl },
+  broken_rail: { url: brokenRailUrl },
+  crystal_cluster_large: { url: crystalLargeUrl },
+  crystal_cluster_small: { url: crystalSmallUrl },
+  crystal_spikes: { url: crystalSpikesUrl },
+  crystal_cavern_platform: { url: crystalPlatformUrl },
+  debris_cluster: { url: debrisUrl },
+  ember_shard: { url: emberShardUrl, clips: { collectible_loop: loop(1, 60) } },
+  fire_jet: { url: fireJetUrl, clips: { flame_loop: loop(1, 30), burst: once(45, 80) } },
+  forge_gear: { url: forgeGearUrl, clips: { gear_spin_loop: loop(1, 60) } },
+  forge_pipe: { url: forgePipeUrl, clips: { valve_vent_loop: loop(1, 60) } },
+  iron_maw: {
+    url: ironMawUrl,
+    clips: { chase_loop: loop(1, 60), lunge: once(70, 105), catch: once(120, 160) },
+  },
+  low_beam: { url: lowBeamUrl, clips: { chain_sway_loop: loop(1, 60) } },
+  minecart_hero: {
+    url: minecartUrl,
+    clips: {
+      idle_loop: loop(1, 60),
+      wheel_spin_loop: loop(70, 100),
+      suspension_hit: once(110, 145),
+      crash: once(160, 210),
+    },
+  },
+  oncoming_cart: { url: oncomingCartUrl, clips: { approach_loop: loop(1, 30) } },
+  portcullis_gate: {
+    url: gateUrl,
+    clips: { warning_shudder: once(1, 32), lift_cycle: once(45, 90) },
+  },
+  powerup_frenzy: { url: frenzyUrl, clips: { pickup_loop: loop(1, 60) } },
+  flooded_ravine_platform: { url: ravinePlatformUrl },
+  powerup_ghost: { url: ghostUrl, clips: { pickup_loop: loop(1, 60) } },
+  powerup_magnet: { url: magnetUrl, clips: { pickup_loop: loop(1, 60) } },
+  powerup_repair: { url: repairUrl, clips: { pickup_loop: loop(1, 60) } },
+  powerup_shield: { url: shieldUrl, clips: { pickup_loop: loop(1, 60) } },
+  prism: { url: prismUrl, clips: { collectible_loop: loop(1, 60) } },
+  rail_ballast_cluster: { url: ballastUrl },
+  ravine_tree: { url: ravineTreeUrl, clips: { wind_sway_loop: loop(1, 90) } },
+  rin_vale: {
+    url: rinUrl,
+    clips: {
+      idle_cart: loop(1, 60),
+      lean_left: once(70, 90),
+      lean_right: once(100, 120),
+      jump: once(130, 170),
+      duck: once(180, 210),
+      stumble: once(220, 250),
+      crash: once(260, 310),
+      celebrate: once(320, 360),
+    },
+  },
+  rock_pile: { url: rockPileUrl },
+  rock_wall_cluster: { url: rockWallUrl },
+  timber_support_arch: { url: timberArchUrl },
+  timber_support_arch_b: { url: timberArchBUrl },
+  timber_support_arch_c: { url: timberArchCUrl },
+  timber_mine_platform: { url: timberPlatformUrl },
+  torch_sconce: { url: torchUrl, clips: { flame_flicker_loop: loop(1, 45) } },
+  waterfall_frame: { url: waterfallUrl, clips: { water_flow_loop: loop(1, 60) } },
+  ember_forge_platform: { url: forgePlatformUrl },
+};
+
+interface LoadedAsset {
+  scene: THREE.Group;
+  clips: Map<string, { clip: THREE.AnimationClip; loop: boolean }>;
+}
+
+interface AnimationRuntime {
+  id: AssetId;
+  mixer: THREE.AnimationMixer | null;
+  action: THREE.AnimationAction | null;
+  clipName: string | null;
+}
+
+const loadedAssets = new Map<AssetId, LoadedAsset>();
+const animationRuntimes = new WeakMap<THREE.Object3D, AnimationRuntime>();
+let loadPromise: Promise<void> | null = null;
+
+/** Load the complete authored model pack exactly once. */
+export function loadGameAssets(onProgress?: (loaded: number, total: number) => void): Promise<void> {
+  if (loadPromise) return loadPromise;
+  const entries = Object.entries(ASSET_DEFS) as [AssetId, AssetDef][];
+  const loader = new GLTFLoader();
+  let completed = 0;
+  loadPromise = Promise.all(
+    entries.map(async ([id, def]) => {
+      const gltf = await loader.loadAsync(def.url);
+      loadedAssets.set(id, prepareLoadedAsset(gltf, def));
+      completed++;
+      onProgress?.(completed, entries.length);
+    }),
+  ).then(() => undefined);
+  return loadPromise;
+}
+
+function prepareLoadedAsset(gltf: GLTF, def: AssetDef): LoadedAsset {
+  const scene = gltf.scene;
+  scene.updateMatrixWorld(true);
+  scene.traverse((o) => {
+    if (!(o as THREE.Mesh).isMesh) return;
+    const mesh = o as THREE.Mesh;
+    mesh.castShadow = false;
+    mesh.receiveShadow = false;
+  });
+  const clips = new Map<string, { clip: THREE.AnimationClip; loop: boolean }>();
+  const library = gltf.animations[0];
+  if (library && def.clips) {
+    for (const [name, range] of Object.entries(def.clips)) {
+      // Blender frame ranges are inclusive; AnimationUtils uses an exclusive end.
+      const clip = THREE.AnimationUtils.subclip(library, name, range.start, range.end + 1, 30);
+      clips.set(name, { clip, loop: range.loop });
+    }
+  }
+  return { scene, clips };
+}
+
+/** Clone one cached authored asset. Geometry and materials remain shared. */
+export function cloneAsset(id: AssetId, clipName?: string): THREE.Group {
+  const wrapper = new THREE.Group();
+  wrapper.name = `GLB_${id}`;
+  const loaded = loadedAssets.get(id);
+  if (!loaded) {
+    // Unit tests construct visual managers without running the browser preload.
+    // The shipped game always preloads before creating Game.
+    animationRuntimes.set(wrapper, { id, mixer: null, action: null, clipName: null });
+    return wrapper;
+  }
+  wrapper.add(loaded.scene.clone(true));
+  animationRuntimes.set(wrapper, { id, mixer: null, action: null, clipName: null });
+  if (clipName) playAssetClip(wrapper, clipName, true);
+  return wrapper;
+}
+
+export function playAssetClip(root: THREE.Object3D, clipName: string, restart = false, speed = 1): void {
+  const runtime = animationRuntimes.get(root);
+  if (!runtime) return;
+  if (runtime.clipName === clipName && runtime.action && !restart) {
+    runtime.action.timeScale = speed;
+    return;
+  }
+  const spec = loadedAssets.get(runtime.id)?.clips.get(clipName);
+  if (!spec) return;
+  runtime.action?.stop();
+  runtime.mixer ??= new THREE.AnimationMixer(root);
+  const action = runtime.mixer.clipAction(spec.clip);
+  action.reset();
+  action.enabled = true;
+  action.timeScale = speed;
+  action.clampWhenFinished = !spec.loop;
+  action.setLoop(spec.loop ? THREE.LoopRepeat : THREE.LoopOnce, spec.loop ? Infinity : 1);
+  action.play();
+  runtime.action = action;
+  runtime.clipName = clipName;
+}
+
+export function updateAssetAnimation(root: THREE.Object3D, dt: number): void {
+  animationRuntimes.get(root)?.mixer?.update(dt);
+}
+
+export function stopAssetAnimation(root: THREE.Object3D): void {
+  const runtime = animationRuntimes.get(root);
+  runtime?.mixer?.stopAllAction();
+  if (runtime) {
+    runtime.action = null;
+    runtime.clipName = null;
+  }
+}
+
+// --- Shared geometry/material cache for dynamic geometry and VFX ------------
 const geoCache = new Map<string, THREE.BufferGeometry>();
 function cached(key: string, make: () => THREE.BufferGeometry): THREE.BufferGeometry {
   let g = geoCache.get(key);
@@ -20,21 +281,12 @@ function cached(key: string, make: () => THREE.BufferGeometry): THREE.BufferGeom
 export const GEO = {
   box: (w: number, h: number, d: number) =>
     cached(`box${w},${h},${d}`, () => new THREE.BoxGeometry(w, h, d)),
-  cyl: (rt: number, rb: number, h: number, seg = 10) =>
-    cached(`cyl${rt},${rb},${h},${seg}`, () => new THREE.CylinderGeometry(rt, rb, h, seg)),
   sphere: (r: number, seg = 10) =>
     cached(`sph${r},${seg}`, () => new THREE.SphereGeometry(r, seg, Math.max(6, seg - 2))),
-  cone: (r: number, h: number, seg = 8) =>
-    cached(`cone${r},${h},${seg}`, () => new THREE.ConeGeometry(r, h, seg)),
   octa: (r: number) => cached(`octa${r}`, () => new THREE.OctahedronGeometry(r)),
-  ico: (r: number, detail = 0) =>
-    cached(`ico${r},${detail}`, () => new THREE.IcosahedronGeometry(r, detail)),
-  torus: (r: number, t: number) =>
-    cached(`torus${r},${t}`, () => new THREE.TorusGeometry(r, t, 8, 18)),
   plane: (w: number, h: number) => cached(`pl${w},${h}`, () => new THREE.PlaneGeometry(w, h)),
 };
 
-// --- Shared material cache ---------------------------------------------------
 export interface MatOpts {
   rough?: number;
   metal?: number;
@@ -44,6 +296,7 @@ export interface MatOpts {
   transparent?: boolean;
   opacity?: number;
 }
+
 const matCache = new Map<string, THREE.MeshStandardMaterial>();
 export function mat(color: number, o: MatOpts = {}): THREE.MeshStandardMaterial {
   const key = `${color}|${o.rough ?? 0.8}|${o.metal ?? 0}|${o.emissive ?? 0}|${o.emissiveIntensity ?? 1}|${o.flat ? 1 : 0}|${o.transparent ? o.opacity ?? 1 : ''}`;
@@ -69,21 +322,7 @@ export function mat(color: number, o: MatOpts = {}): THREE.MeshStandardMaterial 
   return m;
 }
 
-function add(
-  parent: THREE.Object3D,
-  geo: THREE.BufferGeometry,
-  material: THREE.Material,
-  x = 0,
-  y = 0,
-  z = 0,
-): THREE.Mesh {
-  const m = new THREE.Mesh(geo, material);
-  m.position.set(x, y, z);
-  parent.add(m);
-  return m;
-}
-
-// --- Blob shadow ---------------------------------------------------------------
+// --- Blob shadow -------------------------------------------------------------
 let blobTex: THREE.CanvasTexture | null = null;
 export function blobShadow(radius: number): THREE.Mesh {
   if (!blobTex) {
@@ -112,12 +351,20 @@ export function blobShadow(radius: number): THREE.Mesh {
   return m;
 }
 
-// --- Hero cart -----------------------------------------------------------------
+function named<T extends THREE.Object3D>(root: THREE.Object3D, name: string): T {
+  const object = root.getObjectByName(name);
+  if (!object) throw new Error(`Authored asset is missing required node ${name}`);
+  return object as T;
+}
+
+// --- Hero cart ---------------------------------------------------------------
 export interface CartModel {
   root: THREE.Group;
   hull: THREE.Group;
-  wheels: THREE.Mesh[];
+  wheels: THREE.Object3D[];
   lantern: THREE.Mesh;
+  riderSocket: THREE.Object3D;
+  animationRoot: THREE.Group;
   shield: THREE.Mesh;
   shadow: THREE.Mesh;
 }
@@ -125,60 +372,17 @@ export interface CartModel {
 export function buildCart(): CartModel {
   const root = new THREE.Group();
   const hull = new THREE.Group();
+  const animationRoot = cloneAsset('minecart_hero');
+  hull.add(animationRoot);
   root.add(hull);
-
-  const steel = mat(COLORS.cartBody, { rough: 0.55, metal: 0.7, flat: true });
-  const trim = mat(COLORS.cartTrim, { rough: 0.4, metal: 0.85 });
-  const dark = mat(0x30363c, { rough: 0.7, metal: 0.5 });
-
-  // Angled hopper body: wider at top.
-  const body = add(hull, GEO.box(1.5, 0.85, 1.9), steel, 0, 0.72, 0);
-  (body.geometry as THREE.BoxGeometry).computeBoundingBox();
-  body.scale.set(1, 1, 1);
-  // Rim + panel details
-  add(hull, GEO.box(1.66, 0.14, 2.06), trim, 0, 1.16, 0);
-  add(hull, GEO.box(1.56, 0.5, 0.1), dark, 0, 0.62, 0.98);
-  add(hull, GEO.box(1.56, 0.5, 0.1), dark, 0, 0.62, -0.98);
-  add(hull, GEO.box(0.1, 0.5, 1.96), dark, 0.76, 0.62, 0);
-  add(hull, GEO.box(0.1, 0.5, 1.96), dark, -0.76, 0.62, 0);
-  // Rivet strips
-  for (const sx of [-0.6, 0, 0.6]) add(hull, GEO.box(0.12, 0.66, 0.06), trim, sx, 0.72, 1.0);
-  // Chassis
-  add(hull, GEO.box(1.2, 0.22, 1.7), dark, 0, 0.26, 0);
-  // Sunheart lantern on the prow
-  const lantern = add(
-    hull,
-    GEO.octa(0.19),
-    mat(COLORS.sunheart, { emissive: COLORS.sunheart, emissiveIntensity: 2.2, rough: 0.3 }),
-    0,
-    1.05,
-    1.12,
+  const wheels = ['ANIM_wheel_FL', 'ANIM_wheel_FR', 'ANIM_wheel_RL', 'ANIM_wheel_RR'].map((n) =>
+    named<THREE.Object3D>(animationRoot, n),
   );
-  add(hull, GEO.torus(0.24, 0.035), trim, 0, 1.05, 1.12).rotation.y = 0;
+  const lantern = named<THREE.Mesh>(animationRoot, 'ANIM_sunheart_lantern');
+  const riderSocket = named<THREE.Object3D>(animationRoot, 'SOCKET_rider');
 
-  // Wheels
-  const wheels: THREE.Mesh[] = [];
-  const wgeo = GEO.cyl(0.3, 0.3, 0.18, 12);
-  const wmat = mat(COLORS.cartWheel, { rough: 0.5, metal: 0.8 });
-  for (const [x, z] of [
-    [-0.62, 0.62],
-    [0.62, 0.62],
-    [-0.62, -0.62],
-    [0.62, -0.62],
-  ]) {
-    const w = new THREE.Mesh(wgeo, wmat);
-    w.rotation.z = Math.PI / 2;
-    w.position.set(x, 0.3, z);
-    root.add(w);
-    wheels.push(w);
-    const hub = new THREE.Mesh(GEO.cyl(0.09, 0.09, 0.22, 8), trim);
-    hub.rotation.z = Math.PI / 2;
-    w.add(hub);
-  }
-
-  // Shield dome (hidden until Aegis Plate active)
-  const shield = add(
-    root,
+  // A shield is a transient gameplay VFX rather than an authored world model.
+  const shield = new THREE.Mesh(
     GEO.sphere(1.55, 14),
     mat(COLORS.shield, {
       emissive: COLORS.shield,
@@ -187,343 +391,139 @@ export function buildCart(): CartModel {
       opacity: 0.22,
       rough: 0.2,
     }),
-    0,
-    0.9,
-    0,
   );
+  shield.position.y = 0.9;
   shield.scale.set(1, 0.85, 1.25);
   shield.visible = false;
+  root.add(shield);
 
   const shadow = blobShadow(1.5);
   shadow.position.y = 0.02;
   root.add(shadow);
-
-  return { root, hull, wheels, lantern, shield, shadow };
+  return { root, hull, wheels, lantern, riderSocket, animationRoot, shield, shadow };
 }
 
-// --- Rin (hero character) --------------------------------------------------------
+// --- Rin ---------------------------------------------------------------------
 export interface RinModel {
   root: THREE.Group;
-  torso: THREE.Group;
-  head: THREE.Group;
-  armL: THREE.Mesh;
-  armR: THREE.Mesh;
-  scarf: THREE.Mesh;
+  torso: THREE.Object3D;
+  head: THREE.Object3D;
+  armL: THREE.Object3D;
+  armR: THREE.Object3D;
+  scarf: THREE.Object3D;
 }
 
 export function buildRin(): RinModel {
-  const root = new THREE.Group();
-  const torso = new THREE.Group();
-  root.add(torso);
-
-  const jacket = mat(COLORS.rinJacket, { rough: 0.85 });
-  const skin = mat(COLORS.rinSkin, { rough: 0.7 });
-  const hair = mat(COLORS.rinHair, { rough: 0.9 });
-
-  add(torso, GEO.cyl(0.24, 0.3, 0.62, 8), jacket, 0, 0.55, 0);
-  // Backpack with relic satchel
-  add(torso, GEO.box(0.34, 0.4, 0.18), mat(0x6b5232, { rough: 0.9 }), 0, 0.62, -0.28);
-
-  const head = new THREE.Group();
-  head.position.set(0, 1.02, 0);
-  torso.add(head);
-  add(head, GEO.sphere(0.19, 10), skin, 0, 0, 0);
-  const hairCap = add(head, GEO.sphere(0.21, 10), hair, 0, 0.05, -0.03);
-  hairCap.scale.set(1, 0.85, 1);
-  // Ponytail
-  add(head, GEO.cyl(0.05, 0.02, 0.3, 6), hair, 0, -0.06, -0.22).rotation.x = 0.7;
-  // Goggles band
-  add(head, GEO.torus(0.19, 0.025), mat(0x2c2c2c, { rough: 0.6 }), 0, 0.06, 0).rotation.x =
-    Math.PI / 2 - 0.25;
-
-  const scarf = add(torso, GEO.box(0.4, 0.12, 0.3), mat(COLORS.rinScarf, { rough: 0.95 }), 0, 0.88, 0.02);
-
-  const armGeo = GEO.cyl(0.06, 0.075, 0.5, 6);
-  const armL = new THREE.Mesh(armGeo, jacket);
-  armL.position.set(-0.3, 0.78, 0.12);
-  armL.rotation.set(-1.0, 0, -0.35);
-  torso.add(armL);
-  const armR = new THREE.Mesh(armGeo, jacket);
-  armR.position.set(0.3, 0.78, 0.12);
-  armR.rotation.set(-1.0, 0, 0.35);
-  torso.add(armR);
-
-  return { root, torso, head, armL, armR, scarf };
+  const root = cloneAsset('rin_vale');
+  return {
+    root,
+    torso: named(root, 'ANIM_torso'),
+    head: named(root, 'ANIM_head'),
+    armL: named(root, 'ANIM_arm_L'),
+    armR: named(root, 'ANIM_arm_R'),
+    scarf: named(root, 'ANIM_scarf'),
+  };
 }
 
-// --- Iron Maw (chase guardian silhouette) ---------------------------------------
+// --- Iron Maw ----------------------------------------------------------------
 export interface MawModel {
   root: THREE.Group;
   eyes: THREE.Mesh[];
-  grinders: THREE.Mesh[];
+  grinders: THREE.Object3D[];
 }
 
 export function buildMaw(): MawModel {
-  const root = new THREE.Group();
-  const body = mat(COLORS.maw, { rough: 0.95, flat: true });
-  const glowM = mat(COLORS.mawEye, { emissive: COLORS.mawEye, emissiveIntensity: 3 });
-
-  const hull = add(root, GEO.box(5.4, 4.6, 3.2), body, 0, 2.4, 0);
-  hull.rotation.x = 0.08;
-  add(root, GEO.box(6.2, 1.4, 2.2), body, 0, 0.8, 0.7);
-  // Maw grinder cones
-  const grinders: THREE.Mesh[] = [];
-  for (let i = 0; i < 5; i++) {
-    const g = add(root, GEO.cone(0.55, 1.3, 6), body, -2.2 + i * 1.1, 1.1, 1.9);
-    g.rotation.x = Math.PI / 2;
-    grinders.push(g);
-  }
-  // Eyes
-  const eyes: THREE.Mesh[] = [];
-  for (const x of [-1.5, 1.5]) {
-    eyes.push(add(root, GEO.sphere(0.34, 8), glowM, x, 3.6, 1.62));
-  }
-  // Shoulder arms
-  for (const s of [-1, 1]) {
-    const arm = add(root, GEO.box(1.0, 3.4, 1.0), body, s * 3.4, 2.2, 0.6);
-    arm.rotation.z = s * -0.18;
-  }
-  return { root, eyes, grinders };
+  const root = cloneAsset('iron_maw', 'chase_loop');
+  return {
+    root,
+    eyes: [named(root, 'ANIM_eye_L'), named(root, 'ANIM_eye_R')],
+    grinders: [0, 1, 2, 3, 4].map((i) => named(root, `ANIM_grinder_${i}`)),
+  };
 }
 
-// --- Obstacles -------------------------------------------------------------------
-// Every obstacle: readable silhouette + a hot-red hazard accent (color language).
-const hazardM = () =>
-  mat(COLORS.hazard, { emissive: COLORS.hazardLamp, emissiveIntensity: 1.4, rough: 0.5 });
+// --- Obstacles and power-ups -------------------------------------------------
+export const buildBlockerCart = (): THREE.Group => cloneAsset('blocker_cart');
+export const buildBrokenRail = (): THREE.Group => cloneAsset('broken_rail');
+export const buildLowBeam = (): THREE.Group => cloneAsset('low_beam', 'chain_sway_loop');
+export const buildGate = (): THREE.Group => cloneAsset('portcullis_gate', 'warning_shudder');
+export const buildRockPile = (): THREE.Group => cloneAsset('rock_pile');
+export const buildOncomingCart = (): THREE.Group => cloneAsset('oncoming_cart', 'approach_loop');
+export const buildFireJet = (): THREE.Group => cloneAsset('fire_jet', 'flame_loop');
+export const buildCrystalSpikes = (): THREE.Group => cloneAsset('crystal_spikes');
+export const buildDebris = (): THREE.Group => cloneAsset('debris_cluster');
 
-export function buildBlockerCart(): THREE.Group {
-  const g = new THREE.Group();
-  const rust = mat(0x6e4530, { rough: 0.85, metal: 0.4, flat: true });
-  add(g, GEO.box(1.5, 0.9, 1.8), rust, 0, 0.75, 0);
-  add(g, GEO.box(1.64, 0.14, 1.94), mat(0x513324, { rough: 0.9 }), 0, 1.2, 0);
-  // Ore heap
-  add(g, GEO.ico(0.55, 0), mat(0x555a60, { rough: 0.95, flat: true }), 0, 1.35, 0);
-  add(g, GEO.box(1.3, 0.25, 0.25), hazardM(), 0, 1.0, 0.95);
-  for (const [x, z] of [[-0.6, 0.6], [0.6, 0.6], [-0.6, -0.6], [0.6, -0.6]]) {
-    const w = add(g, GEO.cyl(0.26, 0.26, 0.16, 10), mat(0x2b2622, { rough: 0.6 }), x, 0.28, z);
-    w.rotation.z = Math.PI / 2;
-  }
-  return g;
-}
+const POWERUP_IDS: Record<string, AssetId> = {
+  magnet: 'powerup_magnet',
+  shield: 'powerup_shield',
+  ghost: 'powerup_ghost',
+  frenzy: 'powerup_frenzy',
+  repair: 'powerup_repair',
+};
 
-export function buildBrokenRail(): THREE.Group {
-  // A collapsed gap: splintered ends + warning lamp. The hazard is the GAP —
-  // this model marks its leading edge.
-  const g = new THREE.Group();
-  const wood = mat(0x4a3018, { rough: 0.95, flat: true });
-  for (const s of [-1, 1]) {
-    const plank = add(g, GEO.box(0.28, 0.14, 1.4), wood, s * 0.5, 0.1, -0.3);
-    plank.rotation.set(0.5 * s, s * 0.4, 0.25 * s);
-  }
-  const post = add(g, GEO.box(0.14, 1.0, 0.14), wood, -0.85, 0.5, 0);
-  post.rotation.z = 0.18;
-  add(g, GEO.sphere(0.13, 8), hazardM(), -0.9, 1.05, 0);
-  return g;
-}
-
-export function buildLowBeam(): THREE.Group {
-  const g = new THREE.Group();
-  const wood = mat(0x5a3d20, { rough: 0.95, flat: true });
-  add(g, GEO.box(2.4, 0.45, 0.45), wood, 0, 1.55, 0);
-  add(g, GEO.box(0.32, 1.85, 0.32), wood, -1.25, 0.92, 0);
-  add(g, GEO.box(0.32, 1.85, 0.32), wood, 1.25, 0.92, 0);
-  // Dangling warning chains + red stripe
-  add(g, GEO.box(2.2, 0.1, 0.5), hazardM(), 0, 1.32, 0);
-  for (const x of [-0.7, 0, 0.7]) add(g, GEO.cyl(0.02, 0.02, 0.4, 5), mat(0x777777, { metal: 0.8, rough: 0.4 }), x, 1.1, 0.12);
-  return g;
-}
-
-export function buildGate(): THREE.Group {
-  const g = new THREE.Group();
-  const iron = mat(0x3c4046, { rough: 0.6, metal: 0.75, flat: true });
-  add(g, GEO.box(0.3, 2.4, 0.3), iron, -1.15, 1.2, 0);
-  add(g, GEO.box(0.3, 2.4, 0.3), iron, 1.15, 1.2, 0);
-  // Half-closed portcullis — duck under
-  const grid = new THREE.Group();
-  grid.position.y = 1.85;
-  g.add(grid);
-  for (const x of [-0.9, -0.45, 0, 0.45, 0.9]) add(grid, GEO.box(0.09, 1.4, 0.09), iron, x, 0, 0);
-  add(grid, GEO.box(2.1, 0.12, 0.12), hazardM(), 0, -0.68, 0);
-  return g;
-}
-
-export function buildRockPile(): THREE.Group {
-  const g = new THREE.Group();
-  const rock = mat(0x5c5852, { rough: 0.95, flat: true });
-  add(g, GEO.ico(0.6, 0), rock, 0, 0.5, 0);
-  add(g, GEO.ico(0.42, 0), rock, -0.5, 0.32, 0.2).rotation.set(0.5, 1, 0);
-  add(g, GEO.ico(0.36, 0), rock, 0.48, 0.3, -0.15).rotation.set(1, 0.4, 0.6);
-  add(g, GEO.cone(0.14, 0.5, 5), hazardM(), 0, 1.1, 0);
-  return g;
-}
-
-export function buildOncomingCart(): THREE.Group {
-  const g = buildBlockerCart();
-  // Headlamp — the telegraph for an oncoming cart.
-  const lamp = new THREE.Mesh(
-    GEO.sphere(0.16, 8),
-    mat(0xfff2c0, { emissive: 0xffe9a0, emissiveIntensity: 4 }),
-  );
-  lamp.position.set(0, 1.05, 1.05);
-  g.add(lamp);
-  return g;
-}
-
-export function buildFireJet(): THREE.Group {
-  const g = new THREE.Group();
-  const iron = mat(0x3a3634, { rough: 0.7, metal: 0.6, flat: true });
-  add(g, GEO.cyl(0.35, 0.45, 0.5, 8), iron, 0, 0.25, 0);
-  const flame = new THREE.Mesh(
-    GEO.cone(0.42, 2.2, 8),
-    mat(0xff7a1a, { emissive: 0xff5a00, emissiveIntensity: 2.4, transparent: true, opacity: 0.85 }),
-  );
-  flame.position.y = 1.6;
-  flame.name = 'flame';
-  g.add(flame);
-  const glow = new THREE.Mesh(GEO.sphere(0.3, 8), mat(0xffa040, { emissive: 0xff8020, emissiveIntensity: 3 }));
-  glow.position.y = 0.55;
-  glow.name = 'vent';
-  g.add(glow);
-  return g;
-}
-
-export function buildCrystalSpikes(): THREE.Group {
-  const g = new THREE.Group();
-  const c = mat(0x64f0e8, { emissive: 0x2ec8c0, emissiveIntensity: 0.9, rough: 0.25, flat: true });
-  for (const [x, s, r] of [
-    [-0.4, 0.9, 0.3],
-    [0.15, 1.3, -0.15],
-    [0.55, 0.7, 0.4],
-  ]) {
-    const spike = add(g, GEO.cone(0.28, 1.4, 5), c, x, 0.6 * s, 0);
-    spike.scale.setScalar(s);
-    spike.rotation.z = r;
-  }
-  add(g, GEO.box(1.4, 0.14, 0.6), hazardM(), 0, 0.07, 0.5);
-  return g;
-}
-
-export function buildDebris(): THREE.Group {
-  // Minor obstacle — clipping it costs speed + combo, not the run.
-  const g = new THREE.Group();
-  const wood = mat(0x54401f, { rough: 0.95, flat: true });
-  add(g, GEO.box(0.9, 0.25, 0.5), wood, 0, 0.12, 0).rotation.y = 0.5;
-  add(g, GEO.box(0.7, 0.2, 0.35), wood, 0.2, 0.35, 0.1).rotation.y = -0.3;
-  add(g, GEO.cyl(0.16, 0.16, 0.5, 7), mat(0x6b5232, { rough: 0.9 }), -0.3, 0.25, 0.1).rotation.z = 1.2;
-  return g;
-}
-
-// --- Power-up pickups --------------------------------------------------------------
 export function buildPowerup(kind: string): THREE.Group {
-  const g = new THREE.Group();
-  const base = mat(COLORS.safe, { emissive: COLORS.safe, emissiveIntensity: 1.1, rough: 0.3 });
-  const ring = new THREE.Mesh(GEO.torus(0.55, 0.05), base);
-  ring.name = 'ring';
-  ring.position.y = 1.0;
-  g.add(ring);
-  let core: THREE.Mesh;
-  switch (kind) {
-    case 'magnet':
-      core = new THREE.Mesh(GEO.torus(0.24, 0.09), mat(0xff5a5a, { emissive: 0xff3030, emissiveIntensity: 1.4 }));
-      break;
-    case 'shield':
-      core = new THREE.Mesh(GEO.sphere(0.3, 10), mat(COLORS.shield, { emissive: COLORS.shield, emissiveIntensity: 1.5 }));
-      break;
-    case 'ghost':
-      core = new THREE.Mesh(
-        GEO.ico(0.32, 0),
-        mat(0xbfe8ff, { emissive: 0x9fd8ff, emissiveIntensity: 1.2, transparent: true, opacity: 0.55 }),
-      );
-      break;
-    case 'frenzy':
-      core = new THREE.Mesh(GEO.octa(0.34), mat(COLORS.ember, { emissive: COLORS.ember, emissiveIntensity: 2 }));
-      break;
-    default: // repair
-      core = new THREE.Mesh(GEO.box(0.4, 0.4, 0.4), mat(0x8effc0, { emissive: 0x40e080, emissiveIntensity: 1.5 }));
+  return cloneAsset(POWERUP_IDS[kind] ?? 'powerup_repair', 'pickup_loop');
+}
+
+export type EnvironmentAssetId =
+  | 'crystal_cluster_large'
+  | 'crystal_cluster_small'
+  | 'forge_gear'
+  | 'forge_pipe'
+  | 'rail_ballast_cluster'
+  | 'ravine_tree'
+  | 'rock_wall_cluster'
+  | 'timber_support_arch'
+  | 'timber_support_arch_b'
+  | 'timber_support_arch_c'
+  | 'torch_sconce'
+  | 'waterfall_frame';
+
+const ENVIRONMENT_CLIPS: Partial<Record<EnvironmentAssetId, string>> = {
+  forge_gear: 'gear_spin_loop',
+  forge_pipe: 'valve_vent_loop',
+  ravine_tree: 'wind_sway_loop',
+  torch_sconce: 'flame_flicker_loop',
+  waterfall_frame: 'water_flow_loop',
+};
+
+export function buildEnvironmentAsset(id: EnvironmentAssetId): THREE.Group {
+  return cloneAsset(id, ENVIRONMENT_CLIPS[id]);
+}
+
+// --- Instanced authored assets ----------------------------------------------
+export interface InstancedAsset {
+  root: THREE.Group;
+  meshes: THREE.InstancedMesh[];
+  relativeMatrices: THREE.Matrix4[];
+  count: number;
+}
+
+export function buildInstancedAsset(id: AssetId, count: number): InstancedAsset {
+  const root = new THREE.Group();
+  const meshes: THREE.InstancedMesh[] = [];
+  const relativeMatrices: THREE.Matrix4[] = [];
+  const source = loadedAssets.get(id)?.scene;
+  if (source) {
+    source.updateMatrixWorld(true);
+    source.traverse((o) => {
+      if (!(o as THREE.Mesh).isMesh) return;
+      const part = o as THREE.Mesh;
+      const mesh = new THREE.InstancedMesh(part.geometry, part.material, count);
+      mesh.name = `${id}_${part.name}`;
+      mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      mesh.frustumCulled = false;
+      root.add(mesh);
+      meshes.push(mesh);
+      relativeMatrices.push(part.matrixWorld.clone());
+    });
   }
-  core.name = 'core';
-  core.position.y = 1.0;
-  g.add(core);
-  return g;
-}
-
-// --- Biome props ----------------------------------------------------------------
-export function buildTimberFrame(): THREE.Group {
-  const g = new THREE.Group();
-  const wood = mat(0x5f4224, { rough: 0.95, flat: true });
-  add(g, GEO.box(0.45, 5.2, 0.45), wood, -4.6, 2.6, 0);
-  add(g, GEO.box(0.45, 5.2, 0.45), wood, 4.6, 2.6, 0);
-  add(g, GEO.box(9.8, 0.5, 0.5), wood, 0, 5.1, 0);
-  add(g, GEO.box(0.35, 1.6, 0.35), wood, -4.0, 4.6, 0).rotation.z = 0.65;
-  add(g, GEO.box(0.35, 1.6, 0.35), wood, 4.0, 4.6, 0).rotation.z = -0.65;
-  return g;
-}
-
-export function buildTorch(): THREE.Group {
-  const g = new THREE.Group();
-  add(g, GEO.cyl(0.05, 0.07, 0.7, 6), mat(0x4a3018, { rough: 0.9 }), 0, 0.35, 0);
-  const flame = new THREE.Mesh(
-    GEO.cone(0.16, 0.45, 7),
-    mat(0xffb43c, { emissive: 0xff8c1e, emissiveIntensity: 2.6 }),
-  );
-  flame.position.y = 0.85;
-  flame.name = 'flame';
-  g.add(flame);
-  return g;
-}
-
-export function buildCrystalCluster(big: boolean): THREE.Group {
-  const g = new THREE.Group();
-  const cyan = mat(0x54e8e0, { emissive: 0x2cb8b0, emissiveIntensity: 1.1, rough: 0.2, flat: true });
-  const violet = mat(0xb46cff, { emissive: 0x7a3cc8, emissiveIntensity: 1.0, rough: 0.2, flat: true });
-  const s = big ? 2.2 : 1;
-  add(g, GEO.cone(0.3 * s, 1.6 * s, 6), cyan, 0, 0.8 * s, 0).rotation.z = 0.1;
-  add(g, GEO.cone(0.2 * s, 1.0 * s, 6), violet, 0.35 * s, 0.5 * s, 0.1).rotation.z = -0.4;
-  add(g, GEO.cone(0.16 * s, 0.8 * s, 6), cyan, -0.3 * s, 0.4 * s, -0.1).rotation.z = 0.45;
-  return g;
-}
-
-export function buildRavineTree(): THREE.Group {
-  const g = new THREE.Group();
-  add(g, GEO.cyl(0.18, 0.28, 2.4, 7), mat(0x4f3a22, { rough: 0.95 }), 0, 1.2, 0);
-  const leaf = mat(0x4f7a4a, { rough: 0.9, flat: true });
-  add(g, GEO.ico(1.1, 0), leaf, 0, 2.9, 0);
-  add(g, GEO.ico(0.7, 0), leaf, 0.7, 2.3, 0.2);
-  return g;
-}
-
-export function buildForgePipe(): THREE.Group {
-  const g = new THREE.Group();
-  const iron = mat(0x45403d, { rough: 0.6, metal: 0.7, flat: true });
-  add(g, GEO.cyl(0.4, 0.4, 5.0, 9), iron, 0, 2.5, 0);
-  add(g, GEO.torus(0.46, 0.07), iron, 0, 3.6, 0).rotation.x = Math.PI / 2;
-  const vent = add(g, GEO.sphere(0.2, 8), mat(0xff5a12, { emissive: 0xff3a00, emissiveIntensity: 2.6 }), 0, 1.4, 0.38);
-  vent.name = 'flame';
-  return g;
-}
-
-export function buildGear(): THREE.Group {
-  const g = new THREE.Group();
-  const iron = mat(0x504a46, { rough: 0.55, metal: 0.8, flat: true });
-  const wheel = new THREE.Mesh(GEO.cyl(1.5, 1.5, 0.35, 10), iron);
-  wheel.rotation.x = Math.PI / 2;
-  wheel.name = 'spin';
-  g.add(wheel);
-  for (let i = 0; i < 8; i++) {
-    const tooth = new THREE.Mesh(GEO.box(0.4, 0.5, 0.35), iron);
-    const a = (i / 8) * Math.PI * 2;
-    tooth.position.set(Math.cos(a) * 1.65, Math.sin(a) * 1.65, 0);
-    tooth.rotation.z = a;
-    wheel.add(tooth);
+  if (meshes.length === 0) {
+    // Headless unit-test placeholder; runtime always has the preloaded GLB.
+    const mesh = new THREE.InstancedMesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial(), count);
+    mesh.frustumCulled = false;
+    root.add(mesh);
+    meshes.push(mesh);
+    relativeMatrices.push(new THREE.Matrix4());
   }
-  return g;
-}
-
-export function buildWaterfallCard(): THREE.Mesh {
-  const m = new THREE.Mesh(
-    GEO.plane(3.2, 14),
-    mat(0xbfe4ff, { emissive: 0x8fc8f0, emissiveIntensity: 0.5, transparent: true, opacity: 0.4, rough: 0.2 }),
-  );
-  m.name = 'waterfall';
-  return m;
+  return { root, meshes, relativeMatrices, count };
 }

@@ -455,8 +455,7 @@ button:focus-visible {
   animation: pulse 1s infinite;
 }
 
-/* --- Pause + settings --- */
-#pause,
+/* --- Settings --- */
 #settings {
   background: rgba(6, 3, 1, 0.78);
 }

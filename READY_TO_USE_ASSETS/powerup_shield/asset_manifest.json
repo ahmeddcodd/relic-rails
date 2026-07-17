@@ -1,0 +1,76 @@
+{
+  "assetId": "powerup_shield",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "powerup",
+  "description": "Readable low-poly shield power-up with a shared mint pickup ring.",
+  "files": {
+    "runtime": "powerup_shield.glb",
+    "source": "powerup_shield.blend",
+    "preview": "powerup_shield_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "lane centre, root at ground; visible core centred at 1 m",
+  "boundsBlenderMetres": {
+    "min": [
+      -0.203,
+      -0.5931,
+      0.4199
+    ],
+    "max": [
+      0.2567,
+      0.5931,
+      1.5801
+    ],
+    "size": [
+      0.4597,
+      1.1862,
+      1.1602
+    ]
+  },
+  "performance": {
+    "triangles": 204,
+    "sourceVertices": 106,
+    "meshPrimitives": 3,
+    "materials": 3,
+    "glbBytes": 23252,
+    "triangleBudget": 1800
+  },
+  "meshes": [
+    "ANIM_pickup_ring",
+    "ANIM_shield_core",
+    "ANIM_shield_band"
+  ],
+  "materials": [
+    "MAT_Blue",
+    "MAT_IronLight",
+    "MAT_Mint"
+  ],
+  "sockets": [],
+  "animation": {
+    "fps": 30,
+    "library": "powerup_shield_action_library",
+    "clips": [
+      {
+        "name": "pickup_loop",
+        "start": 1,
+        "end": 60,
+        "loop": true,
+        "description": "Shared two-second bob and spin cadence used by every power-up."
+      }
+    ]
+  },
+  "runtimeNotes": [
+    "Runtime magnet attraction may override root position.",
+    "All power-ups use identical loop timing for visual consistency."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

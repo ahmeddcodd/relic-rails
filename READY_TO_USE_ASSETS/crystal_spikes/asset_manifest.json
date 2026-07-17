@@ -1,0 +1,67 @@
+{
+  "assetId": "crystal_spikes",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "obstacle",
+  "description": "Faceted crystal jump hazard with a consistent red base telegraph.",
+  "files": {
+    "runtime": "crystal_spikes.glb",
+    "source": "crystal_spikes.blend",
+    "preview": "crystal_spikes_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "lane centre on ground",
+  "boundsBlenderMetres": {
+    "min": [
+      -0.76,
+      -0.6,
+      -0.0383
+    ],
+    "max": [
+      0.76,
+      0.4,
+      1.6792
+    ],
+    "size": [
+      1.52,
+      1.0,
+      1.7175
+    ]
+  },
+  "performance": {
+    "triangles": 104,
+    "sourceVertices": 60,
+    "meshPrimitives": 3,
+    "materials": 3,
+    "glbBytes": 11612,
+    "triangleBudget": 700
+  },
+  "meshes": [
+    "GEO_cyan",
+    "GEO_violet",
+    "GEO_hazard"
+  ],
+  "materials": [
+    "MAT_Cyan",
+    "MAT_Hazard",
+    "MAT_Violet"
+  ],
+  "sockets": [],
+  "animation": {
+    "fps": 30,
+    "library": null,
+    "clips": []
+  },
+  "runtimeNotes": [
+    "Decorative wall crystals must not use this red base silhouette."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

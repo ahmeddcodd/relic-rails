@@ -1,0 +1,48 @@
+{
+  "assetId": "timber_mine_platform",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "environment_modular_track_platform",
+  "description": "Four-metre Blender-authored Timber Maw Mine platform with track, filled shoulders, mountains, and walls.",
+  "files": {
+    "runtime": "timber_mine_platform.glb",
+    "source": "timber_mine_platform.blend",
+    "preview": "timber_mine_platform_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "module centre on track basis; repeat every 4 metres",
+  "moduleLengthMetres": 4.0,
+  "boundsBlenderMetres": {
+    "min": [
+      -13.0,
+      -2.6853,
+      -1.2
+    ],
+    "max": [
+      13.0,
+      2.5554,
+      11.75
+    ],
+    "size": [
+      26.0,
+      5.2407,
+      12.95
+    ]
+  },
+  "performance": {
+    "triangles": 2144,
+    "sourceVertices": 1196,
+    "meshPrimitives": 9,
+    "materials": 9,
+    "glbBytes": 179520,
+    "triangleBudget": 3200
+  },
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "allPass": true
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "assetId": "powerup_frenzy",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "powerup",
+  "description": "Readable low-poly frenzy power-up with a shared mint pickup ring.",
+  "files": {
+    "runtime": "powerup_frenzy.glb",
+    "source": "powerup_frenzy.blend",
+    "preview": "powerup_frenzy_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "lane centre, root at ground; visible core centred at 1 m",
+  "boundsBlenderMetres": {
+    "min": [
+      -0.513,
+      -0.5931,
+      0.4199
+    ],
+    "max": [
+      0.513,
+      0.5931,
+      1.5801
+    ],
+    "size": [
+      1.0261,
+      1.1862,
+      1.1602
+    ]
+  },
+  "performance": {
+    "triangles": 212,
+    "sourceVertices": 116,
+    "meshPrimitives": 6,
+    "materials": 3,
+    "glbBytes": 24716,
+    "triangleBudget": 1800
+  },
+  "meshes": [
+    "ANIM_pickup_ring",
+    "ANIM_frenzy_core",
+    "ANIM_frenzy_ray_0",
+    "ANIM_frenzy_ray_1",
+    "ANIM_frenzy_ray_2",
+    "ANIM_frenzy_ray_3"
+  ],
+  "materials": [
+    "MAT_Gold",
+    "MAT_GoldCore",
+    "MAT_Mint"
+  ],
+  "sockets": [],
+  "animation": {
+    "fps": 30,
+    "library": "powerup_frenzy_action_library",
+    "clips": [
+      {
+        "name": "pickup_loop",
+        "start": 1,
+        "end": 60,
+        "loop": true,
+        "description": "Shared two-second bob and spin cadence used by every power-up."
+      }
+    ]
+  },
+  "runtimeNotes": [
+    "Runtime magnet attraction may override root position.",
+    "All power-ups use identical loop timing for visual consistency."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

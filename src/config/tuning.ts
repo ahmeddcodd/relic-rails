@@ -23,12 +23,17 @@ export const TUNING = {
     phase3: 19.5,
     phase4: 23,
     phase5: 26,
-    max: 27,
+    max: 34,                // hard ceiling for the endless distance ramp
     overdriveBonus: 5,
     rampTime: 22,           // seconds to blend between phase targets
     minorHitLoss: 0.35,     // fraction of speed lost on a minor hit
     recoverTime: 2.2,       // seconds to regain speed after minor hit
     mercyTime: 0.45,        // brief i-frames after a stumble (co-located hazards only, never phases a wall)
+    // Endless ramp: once the final time-phase is reached, keep speeding up with
+    // DISTANCE so longer runs stay faster (up to `max`). +`endlessPerMetre` m/s
+    // for every metre past `endlessFrom`, clamped at `max`.
+    endlessFrom: 3000,      // metres — distance where the endless ramp begins
+    endlessPerMetre: 0.0016, // m/s added per metre travelled past endlessFrom
   },
 
   // --- Cart handling ---
@@ -38,6 +43,8 @@ export const TUNING = {
     jumpHeight: 2.1,
     jumpTime: 0.62,         // total airborne time at base speed
     duckTime: 0.7,          // how long a duck holds (generous so timing is forgiving)
+    standingRiderTop: 2.95, // measured cart + socket + Rin GLB silhouette
+    duckRiderTop: 2.18,     // measured at the authored duck pose apex
     inputBufferTime: 0.18,  // early-press buffer window
     leanMax: 0.32,          // radians of cart lean during switch
     crashSpinTime: 1.1,

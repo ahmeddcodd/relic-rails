@@ -1,0 +1,85 @@
+{
+  "assetId": "oncoming_cart",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "obstacle",
+  "description": "Reinforced ore cart obstacle with a hot-red gameplay warning stripe.",
+  "files": {
+    "runtime": "oncoming_cart.glb",
+    "source": "oncoming_cart.blend",
+    "preview": "oncoming_cart_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "lane centre at rail height",
+  "boundsBlenderMetres": {
+    "min": [
+      -0.86,
+      -1.1845,
+      0.0332
+    ],
+    "max": [
+      0.86,
+      0.99,
+      1.8297
+    ],
+    "size": [
+      1.72,
+      2.1745,
+      1.7965
+    ]
+  },
+  "performance": {
+    "triangles": 400,
+    "sourceVertices": 224,
+    "meshPrimitives": 9,
+    "materials": 5,
+    "glbBytes": 39224,
+    "triangleBudget": 2200
+  },
+  "meshes": [
+    "GEO_copper",
+    "GEO_iron",
+    "GEO_hazard",
+    "GEO_stone",
+    "ANIM_wheel_FL",
+    "ANIM_wheel_FR",
+    "ANIM_wheel_RL",
+    "ANIM_wheel_RR",
+    "ANIM_headlamp"
+  ],
+  "materials": [
+    "MAT_Copper",
+    "MAT_GoldCore",
+    "MAT_Hazard",
+    "MAT_Iron",
+    "MAT_Stone"
+  ],
+  "sockets": [
+    "SOCKET_horn_fx"
+  ],
+  "animation": {
+    "fps": 30,
+    "library": "oncoming_cart_action_library",
+    "clips": [
+      {
+        "name": "approach_loop",
+        "start": 1,
+        "end": 30,
+        "loop": true,
+        "description": "Synchronized wheel rotation and urgent headlamp pulse."
+      }
+    ]
+  },
+  "runtimeNotes": [
+    "Oncoming motion and collision remain track-space controlled."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

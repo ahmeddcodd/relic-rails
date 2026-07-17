@@ -1,0 +1,88 @@
+{
+  "assetId": "portcullis_gate",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "obstacle",
+  "description": "Measured half-closed iron portcullis with animated shudder and lift cycles.",
+  "files": {
+    "runtime": "portcullis_gate.glb",
+    "source": "portcullis_gate.blend",
+    "preview": "portcullis_gate_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "lane centre on ground",
+  "boundsBlenderMetres": {
+    "min": [
+      -1.39,
+      -0.25,
+      0.0
+    ],
+    "max": [
+      1.39,
+      0.22,
+      4.02
+    ],
+    "size": [
+      2.78,
+      0.47,
+      4.02
+    ]
+  },
+  "performance": {
+    "triangles": 396,
+    "sourceVertices": 216,
+    "meshPrimitives": 7,
+    "materials": 3,
+    "glbBytes": 37448,
+    "triangleBudget": 2100
+  },
+  "meshes": [
+    "GEO_iron",
+    "ANIM_gate_bar_0",
+    "ANIM_gate_bar_1",
+    "ANIM_gate_bar_2",
+    "ANIM_gate_bar_3",
+    "ANIM_gate_bar_4",
+    "ANIM_gate_warning_crossbar"
+  ],
+  "materials": [
+    "MAT_Hazard",
+    "MAT_Iron",
+    "MAT_IronLight"
+  ],
+  "sockets": [],
+  "animation": {
+    "fps": 30,
+    "library": "portcullis_gate_action_library",
+    "clips": [
+      {
+        "name": "warning_shudder",
+        "start": 1,
+        "end": 32,
+        "loop": false,
+        "description": "Metallic side-to-side warning shudder."
+      },
+      {
+        "name": "lift_cycle",
+        "start": 45,
+        "end": 90,
+        "loop": false,
+        "description": "Heavy lift, hold, and controlled drop."
+      }
+    ]
+  },
+  "runtimeNotes": [
+    "Rigid clearance is 2.25 m above the rail plane.",
+    "Gameplay uses the default half-closed pose.",
+    "Only play lift_cycle for set pieces or transitions."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

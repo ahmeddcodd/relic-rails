@@ -1,0 +1,83 @@
+{
+  "assetId": "forge_gear",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "environment_prop",
+  "description": "Large ten-tooth forge gear with copper hub and continuous mechanical loop.",
+  "files": {
+    "runtime": "forge_gear.glb",
+    "source": "forge_gear.blend",
+    "preview": "forge_gear_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "gear axle centre projected to ground root",
+  "boundsBlenderMetres": {
+    "min": [
+      -1.8248,
+      -0.46,
+      -0.0538
+    ],
+    "max": [
+      1.8248,
+      0.19,
+      3.5538
+    ],
+    "size": [
+      3.6496,
+      0.65,
+      3.6077
+    ]
+  },
+  "performance": {
+    "triangles": 648,
+    "sourceVertices": 348,
+    "meshPrimitives": 12,
+    "materials": 2,
+    "glbBytes": 57832,
+    "triangleBudget": 2600
+  },
+  "meshes": [
+    "ANIM_gear_body",
+    "ANIM_gear_hub",
+    "ANIM_gear_tooth_0",
+    "ANIM_gear_tooth_1",
+    "ANIM_gear_tooth_2",
+    "ANIM_gear_tooth_3",
+    "ANIM_gear_tooth_4",
+    "ANIM_gear_tooth_5",
+    "ANIM_gear_tooth_6",
+    "ANIM_gear_tooth_7",
+    "ANIM_gear_tooth_8",
+    "ANIM_gear_tooth_9"
+  ],
+  "materials": [
+    "MAT_Copper",
+    "MAT_Iron"
+  ],
+  "sockets": [],
+  "animation": {
+    "fps": 30,
+    "library": "forge_gear_action_library",
+    "clips": [
+      {
+        "name": "gear_spin_loop",
+        "start": 1,
+        "end": 60,
+        "loop": true,
+        "description": "Two-second constant-speed rotation."
+      }
+    ]
+  },
+  "runtimeNotes": [
+    "Reverse playback for meshing neighbouring gears."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

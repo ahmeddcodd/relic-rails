@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------
 import * as THREE from 'three';
 import { TUNING } from '../config/tuning';
-import { buildMaw, type MawModel } from '../render/assets';
+import { buildMaw, playAssetClip, updateAssetAnimation, type MawModel } from '../render/assets';
 import type { TrackPath } from './track';
 
 export const COMBO_NAMES = ['Warm-up', 'Rolling', 'Blazing', 'Unstoppable', 'Railmaster'] as const;
@@ -199,6 +199,7 @@ export class PowerUpSystem {
 
 // --- Iron Maw chase ----------------------------------------------------------------
 const tmpM = new THREE.Matrix4();
+const tmpBehind = new THREE.Matrix4();
 
 export class ChaseSystem {
   pressure: number = TUNING.chase.startPressure;
@@ -214,6 +215,7 @@ export class ChaseSystem {
   reset(): void {
     this.pressure = TUNING.chase.startPressure;
     this.maw.root.visible = false;
+    playAssetClip(this.maw.root, 'chase_loop', true);
   }
 
   addPressure(x: number): void {
@@ -244,19 +246,25 @@ export class ChaseSystem {
 
     // Map pressure → distance behind the cart (26 m far → 5 m close).
     const behind = crashing ? Math.max(2.5, 8 - this.grindSpin * 0) : 26 - this.pressure * 21;
-    const d = Math.max(0.5, cartDist - behind);
-    this.path.getBasis(d, 0, tmpM);
+    const d = cartDist - behind;
+    if (d >= 0) {
+      this.path.getBasis(d, 0, tmpM);
+    } else {
+      // Extrapolate behind the first track basis instead of clamping the full
+      // scale guardian beside the opening camera.
+      this.path.getBasis(0, 0, tmpM);
+      tmpM.multiply(tmpBehind.makeTranslation(0, 0, d));
+    }
     this.maw.root.matrixAutoUpdate = false;
     this.maw.root.matrix.copy(tmpM);
 
     this.grindSpin += dt * (4 + this.pressure * 9);
-    for (let i = 0; i < this.maw.grinders.length; i++) {
-      const g = this.maw.grinders[i];
-      g.rotation.z = this.grindSpin * (i % 2 ? 1 : -1);
-    }
+    playAssetClip(this.maw.root, crashing ? 'catch' : 'chase_loop', false, 1 + this.pressure * 0.8);
+    updateAssetAnimation(this.maw.root, dt);
     const eyeGlow = 2.2 + Math.sin(this.grindSpin * 2) * 0.8 + this.pressure * 2;
     for (const e of this.maw.eyes) {
-      (e.material as THREE.MeshStandardMaterial).emissiveIntensity = eyeGlow;
+      const material = Array.isArray(e.material) ? e.material[0] : e.material;
+      if (material instanceof THREE.MeshStandardMaterial) material.emissiveIntensity = eyeGlow;
     }
   }
 }

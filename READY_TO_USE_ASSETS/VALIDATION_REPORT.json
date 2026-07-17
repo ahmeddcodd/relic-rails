@@ -1,0 +1,1626 @@
+{
+  "game": "Relic Rails: Abyss Run",
+  "validatedAtUtc": "2026-07-17T12:39:28.002895+00:00",
+  "blenderVersion": "5.1.2",
+  "assetCount": 35,
+  "passed": 35,
+  "failed": 0,
+  "allPass": true,
+  "assets": [
+    {
+      "assetId": "blocker_cart",
+      "glb": "READY_TO_USE_ASSETS\\blocker_cart\\blocker_cart.glb",
+      "imported": {
+        "root": "blocker_cart",
+        "meshes": 4,
+        "materials": 4,
+        "vertices": 804,
+        "triangles": 380,
+        "sockets": [],
+        "actions": 0,
+        "actionNames": [],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.86,
+            -1.04,
+            0.0332
+          ],
+          "max": [
+            0.86,
+            0.99,
+            1.8297
+          ],
+          "size": [
+            1.72,
+            2.03,
+            1.7965
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "broken_rail",
+      "glb": "READY_TO_USE_ASSETS\\broken_rail\\broken_rail.glb",
+      "imported": {
+        "root": "broken_rail",
+        "meshes": 4,
+        "materials": 4,
+        "vertices": 677,
+        "triangles": 292,
+        "sockets": [
+          "SOCKET_falling_dust"
+        ],
+        "actions": 0,
+        "actionNames": [],
+        "boundsBlenderMetres": {
+          "min": [
+            -1.13,
+            -0.8145,
+            -0.0217
+          ],
+          "max": [
+            0.7852,
+            0.5874,
+            1.38
+          ],
+          "size": [
+            1.9152,
+            1.402,
+            1.4017
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "crystal_cavern_platform",
+      "glb": "READY_TO_USE_ASSETS\\crystal_cavern_platform\\crystal_cavern_platform.glb",
+      "imported": {
+        "root": "crystal_cavern_platform",
+        "meshes": 9,
+        "materials": 9,
+        "vertices": 4635,
+        "triangles": 2000,
+        "sockets": [],
+        "actions": 0,
+        "actionNames": [],
+        "boundsBlenderMetres": {
+          "min": [
+            -13.0,
+            -2.6853,
+            -1.2
+          ],
+          "max": [
+            13.0,
+            2.5554,
+            11.75
+          ],
+          "size": [
+            26.0,
+            5.2407,
+            12.95
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "crystal_cluster_large",
+      "glb": "READY_TO_USE_ASSETS\\crystal_cluster_large\\crystal_cluster_large.glb",
+      "imported": {
+        "root": "crystal_cluster_large",
+        "meshes": 3,
+        "materials": 3,
+        "vertices": 264,
+        "triangles": 120,
+        "sockets": [],
+        "actions": 0,
+        "actionNames": [],
+        "boundsBlenderMetres": {
+          "min": [
+            -1.3726,
+            -0.6109,
+            -0.2373
+          ],
+          "max": [
+            1.3586,
+            0.7109,
+            2.9564
+          ],
+          "size": [
+            2.7311,
+            1.3219,
+            3.1938
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "crystal_cluster_small",
+      "glb": "READY_TO_USE_ASSETS\\crystal_cluster_small\\crystal_cluster_small.glb",
+      "imported": {
+        "root": "crystal_cluster_small",
+        "meshes": 3,
+        "materials": 3,
+        "vertices": 264,
+        "triangles": 120,
+        "sockets": [],
+        "actions": 0,
+        "actionNames": [],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.7419,
+            -0.32,
+            -0.1283
+          ],
+          "max": [
+            0.7344,
+            0.4073,
+            1.5981
+          ],
+          "size": [
+            1.4763,
+            0.7273,
+            1.7264
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "crystal_spikes",
+      "glb": "READY_TO_USE_ASSETS\\crystal_spikes\\crystal_spikes.glb",
+      "imported": {
+        "root": "crystal_spikes",
+        "meshes": 3,
+        "materials": 3,
+        "vertices": 206,
+        "triangles": 104,
+        "sockets": [],
+        "actions": 0,
+        "actionNames": [],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.76,
+            -0.6,
+            -0.0383
+          ],
+          "max": [
+            0.76,
+            0.4,
+            1.6792
+          ],
+          "size": [
+            1.52,
+            1.0,
+            1.7175
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "debris_cluster",
+      "glb": "READY_TO_USE_ASSETS\\debris_cluster\\debris_cluster.glb",
+      "imported": {
+        "root": "debris_cluster",
+        "meshes": 3,
+        "materials": 3,
+        "vertices": 300,
+        "triangles": 136,
+        "sockets": [],
+        "actions": 0,
+        "actionNames": [],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.6833,
+            -0.3838,
+            -0.0934
+          ],
+          "max": [
+            0.7577,
+            0.5141,
+            0.5251
+          ],
+          "size": [
+            1.441,
+            0.8979,
+            0.6185
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "ember_forge_platform",
+      "glb": "READY_TO_USE_ASSETS\\ember_forge_platform\\ember_forge_platform.glb",
+      "imported": {
+        "root": "ember_forge_platform",
+        "meshes": 9,
+        "materials": 9,
+        "vertices": 5427,
+        "triangles": 2488,
+        "sockets": [],
+        "actions": 0,
+        "actionNames": [],
+        "boundsBlenderMetres": {
+          "min": [
+            -13.0,
+            -2.6853,
+            -1.2
+          ],
+          "max": [
+            13.0,
+            2.5554,
+            11.75
+          ],
+          "size": [
+            26.0,
+            5.2407,
+            12.95
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "ember_shard",
+      "glb": "READY_TO_USE_ASSETS\\ember_shard\\ember_shard.glb",
+      "imported": {
+        "root": "ember_shard",
+        "meshes": 1,
+        "materials": 1,
+        "vertices": 24,
+        "triangles": 8,
+        "sockets": [],
+        "actions": 1,
+        "actionNames": [
+          "ember_shard_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.2499,
+            -0.2499,
+            0.5416
+          ],
+          "max": [
+            0.2499,
+            0.2499,
+            1.2616
+          ],
+          "size": [
+            0.4998,
+            0.4998,
+            0.72
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "fire_jet",
+      "glb": "READY_TO_USE_ASSETS\\fire_jet\\fire_jet.glb",
+      "imported": {
+        "root": "fire_jet",
+        "meshes": 4,
+        "materials": 4,
+        "vertices": 574,
+        "triangles": 312,
+        "sockets": [
+          "SOCKET_fire_particles",
+          "SOCKET_heat_haze"
+        ],
+        "actions": 1,
+        "actionNames": [
+          "fire_jet_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.4375,
+            -0.4492,
+            0.0
+          ],
+          "max": [
+            0.4375,
+            0.4492,
+            2.3883
+          ],
+          "size": [
+            0.875,
+            0.8984,
+            2.3883
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "flooded_ravine_platform",
+      "glb": "READY_TO_USE_ASSETS\\flooded_ravine_platform\\flooded_ravine_platform.glb",
+      "imported": {
+        "root": "flooded_ravine_platform",
+        "meshes": 7,
+        "materials": 7,
+        "vertices": 4536,
+        "triangles": 2064,
+        "sockets": [],
+        "actions": 0,
+        "actionNames": [],
+        "boundsBlenderMetres": {
+          "min": [
+            -13.05,
+            -2.6853,
+            -1.41
+          ],
+          "max": [
+            13.05,
+            2.5554,
+            8.6
+          ],
+          "size": [
+            26.1,
+            5.2407,
+            10.01
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "forge_gear",
+      "glb": "READY_TO_USE_ASSETS\\forge_gear\\forge_gear.glb",
+      "imported": {
+        "root": "forge_gear",
+        "meshes": 12,
+        "materials": 2,
+        "vertices": 1368,
+        "triangles": 648,
+        "sockets": [],
+        "actions": 1,
+        "actionNames": [
+          "forge_gear_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -1.7959,
+            -0.46,
+            -0.0449
+          ],
+          "max": [
+            1.7959,
+            0.19,
+            3.5449
+          ],
+          "size": [
+            3.5918,
+            0.65,
+            3.5899
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "forge_pipe",
+      "glb": "READY_TO_USE_ASSETS\\forge_pipe\\forge_pipe.glb",
+      "imported": {
+        "root": "forge_pipe",
+        "meshes": 10,
+        "materials": 4,
+        "vertices": 1760,
+        "triangles": 936,
+        "sockets": [
+          "SOCKET_heat_light",
+          "SOCKET_steam"
+        ],
+        "actions": 1,
+        "actionNames": [
+          "forge_pipe_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.5448,
+            -0.5501,
+            0.0
+          ],
+          "max": [
+            0.5448,
+            0.57,
+            5.0
+          ],
+          "size": [
+            1.0896,
+            1.1201,
+            5.0
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "iron_maw",
+      "glb": "READY_TO_USE_ASSETS\\iron_maw\\iron_maw.glb",
+      "imported": {
+        "root": "iron_maw",
+        "meshes": 13,
+        "materials": 5,
+        "vertices": 1634,
+        "triangles": 780,
+        "sockets": [
+          "SOCKET_dust_wake",
+          "SOCKET_mouth_fx"
+        ],
+        "actions": 1,
+        "actionNames": [
+          "iron_maw_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -4.1029,
+            -2.5264,
+            0.4686
+          ],
+          "max": [
+            4.1029,
+            1.6499,
+            5.0501
+          ],
+          "size": [
+            8.2058,
+            4.1763,
+            4.5814
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "low_beam",
+      "glb": "READY_TO_USE_ASSETS\\low_beam\\low_beam.glb",
+      "imported": {
+        "root": "low_beam",
+        "meshes": 6,
+        "materials": 4,
+        "vertices": 610,
+        "triangles": 284,
+        "sockets": [],
+        "actions": 1,
+        "actionNames": [
+          "low_beam_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -1.5153,
+            -0.35,
+            0.0985
+          ],
+          "max": [
+            1.5153,
+            0.2162,
+            2.8276
+          ],
+          "size": [
+            3.0305,
+            0.5662,
+            2.7291
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "minecart_hero",
+      "glb": "READY_TO_USE_ASSETS\\minecart_hero\\minecart_hero.glb",
+      "imported": {
+        "root": "minecart_hero",
+        "meshes": 8,
+        "materials": 4,
+        "vertices": 2228,
+        "triangles": 1140,
+        "sockets": [
+          "SOCKET_rider"
+        ],
+        "actions": 1,
+        "actionNames": [
+          "minecart_hero_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.96,
+            -1.3501,
+            0.01
+          ],
+          "max": [
+            0.96,
+            1.09,
+            1.42
+          ],
+          "size": [
+            1.92,
+            2.4401,
+            1.41
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "oncoming_cart",
+      "glb": "READY_TO_USE_ASSETS\\oncoming_cart\\oncoming_cart.glb",
+      "imported": {
+        "root": "oncoming_cart",
+        "meshes": 9,
+        "materials": 5,
+        "vertices": 864,
+        "triangles": 400,
+        "sockets": [
+          "SOCKET_horn_fx"
+        ],
+        "actions": 1,
+        "actionNames": [
+          "oncoming_cart_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.86,
+            -1.1623,
+            0.0332
+          ],
+          "max": [
+            0.86,
+            0.99,
+            1.8297
+          ],
+          "size": [
+            1.72,
+            2.1523,
+            1.7965
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "portcullis_gate",
+      "glb": "READY_TO_USE_ASSETS\\portcullis_gate\\portcullis_gate.glb",
+      "imported": {
+        "root": "portcullis_gate",
+        "meshes": 7,
+        "materials": 3,
+        "vertices": 864,
+        "triangles": 396,
+        "sockets": [],
+        "actions": 1,
+        "actionNames": [
+          "portcullis_gate_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -1.39,
+            -0.25,
+            0.0
+          ],
+          "max": [
+            1.39,
+            0.22,
+            4.02
+          ],
+          "size": [
+            2.78,
+            0.47,
+            4.02
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "powerup_frenzy",
+      "glb": "READY_TO_USE_ASSETS\\powerup_frenzy\\powerup_frenzy.glb",
+      "imported": {
+        "root": "powerup_frenzy",
+        "meshes": 6,
+        "materials": 3,
+        "vertices": 424,
+        "triangles": 212,
+        "sockets": [],
+        "actions": 1,
+        "actionNames": [
+          "powerup_frenzy_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.5948,
+            -0.34,
+            0.4199
+          ],
+          "max": [
+            0.5948,
+            0.34,
+            1.5801
+          ],
+          "size": [
+            1.1896,
+            0.68,
+            1.1602
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "powerup_ghost",
+      "glb": "READY_TO_USE_ASSETS\\powerup_ghost\\powerup_ghost.glb",
+      "imported": {
+        "root": "powerup_ghost",
+        "meshes": 4,
+        "materials": 3,
+        "vertices": 460,
+        "triangles": 200,
+        "sockets": [],
+        "actions": 1,
+        "actionNames": [
+          "powerup_ghost_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.5948,
+            -0.2213,
+            0.4199
+          ],
+          "max": [
+            0.5948,
+            0.1872,
+            1.5801
+          ],
+          "size": [
+            1.1896,
+            0.4085,
+            1.1602
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "powerup_magnet",
+      "glb": "READY_TO_USE_ASSETS\\powerup_magnet\\powerup_magnet.glb",
+      "imported": {
+        "root": "powerup_magnet",
+        "meshes": 6,
+        "materials": 3,
+        "vertices": 760,
+        "triangles": 360,
+        "sockets": [],
+        "actions": 1,
+        "actionNames": [
+          "powerup_magnet_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.5948,
+            -0.1051,
+            0.4199
+          ],
+          "max": [
+            0.5948,
+            0.1051,
+            1.5801
+          ],
+          "size": [
+            1.1896,
+            0.2102,
+            1.1602
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "powerup_repair",
+      "glb": "READY_TO_USE_ASSETS\\powerup_repair\\powerup_repair.glb",
+      "imported": {
+        "root": "powerup_repair",
+        "meshes": 4,
+        "materials": 2,
+        "vertices": 568,
+        "triangles": 272,
+        "sockets": [],
+        "actions": 1,
+        "actionNames": [
+          "powerup_repair_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.5948,
+            -0.2101,
+            0.4199
+          ],
+          "max": [
+            0.5948,
+            0.1401,
+            1.5801
+          ],
+          "size": [
+            1.1896,
+            0.3501,
+            1.1602
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "powerup_shield",
+      "glb": "READY_TO_USE_ASSETS\\powerup_shield\\powerup_shield.glb",
+      "imported": {
+        "root": "powerup_shield",
+        "meshes": 3,
+        "materials": 3,
+        "vertices": 436,
+        "triangles": 204,
+        "sockets": [],
+        "actions": 1,
+        "actionNames": [
+          "powerup_shield_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.5948,
+            -0.2232,
+            0.4199
+          ],
+          "max": [
+            0.5948,
+            0.2232,
+            1.5801
+          ],
+          "size": [
+            1.1896,
+            0.4465,
+            1.1602
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "prism",
+      "glb": "READY_TO_USE_ASSETS\\prism\\prism.glb",
+      "imported": {
+        "root": "prism",
+        "meshes": 2,
+        "materials": 2,
+        "vertices": 252,
+        "triangles": 116,
+        "sockets": [],
+        "actions": 1,
+        "actionNames": [
+          "prism_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.5748,
+            -0.5748,
+            0.3816
+          ],
+          "max": [
+            0.5748,
+            0.5748,
+            1.4216
+          ],
+          "size": [
+            1.1495,
+            1.1495,
+            1.04
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "rail_ballast_cluster",
+      "glb": "READY_TO_USE_ASSETS\\rail_ballast_cluster\\rail_ballast_cluster.glb",
+      "imported": {
+        "root": "rail_ballast_cluster",
+        "meshes": 4,
+        "materials": 4,
+        "vertices": 624,
+        "triangles": 232,
+        "sockets": [],
+        "actions": 0,
+        "actionNames": [],
+        "boundsBlenderMetres": {
+          "min": [
+            -1.0612,
+            -0.497,
+            -0.0727
+          ],
+          "max": [
+            1.0213,
+            0.5511,
+            0.3327
+          ],
+          "size": [
+            2.0825,
+            1.0481,
+            0.4053
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "ravine_tree",
+      "glb": "READY_TO_USE_ASSETS\\ravine_tree\\ravine_tree.glb",
+      "imported": {
+        "root": "ravine_tree",
+        "meshes": 5,
+        "materials": 2,
+        "vertices": 664,
+        "triangles": 260,
+        "sockets": [
+          "SOCKET_leaf_motes"
+        ],
+        "actions": 1,
+        "actionNames": [
+          "ravine_tree_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -1.0776,
+            -0.4887,
+            -0.0102
+          ],
+          "max": [
+            1.2031,
+            0.6067,
+            3.656
+          ],
+          "size": [
+            2.2807,
+            1.0954,
+            3.6662
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "rin_vale",
+      "glb": "READY_TO_USE_ASSETS\\rin_vale\\rin_vale.glb",
+      "imported": {
+        "root": "rin_vale",
+        "meshes": 18,
+        "materials": 8,
+        "vertices": 1572,
+        "triangles": 704,
+        "sockets": [],
+        "actions": 1,
+        "actionNames": [
+          "rin_vale_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.4601,
+            -0.3,
+            0.21
+          ],
+          "max": [
+            0.4601,
+            0.4156,
+            1.68
+          ],
+          "size": [
+            0.9202,
+            0.7156,
+            1.47
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "rock_pile",
+      "glb": "READY_TO_USE_ASSETS\\rock_pile\\rock_pile.glb",
+      "imported": {
+        "root": "rock_pile",
+        "meshes": 3,
+        "materials": 3,
+        "vertices": 336,
+        "triangles": 120,
+        "sockets": [],
+        "actions": 0,
+        "actionNames": [],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.9451,
+            -0.6171,
+            -0.0675
+          ],
+          "max": [
+            0.8256,
+            0.5784,
+            1.36
+          ],
+          "size": [
+            1.7707,
+            1.1955,
+            1.4275
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "rock_wall_cluster",
+      "glb": "READY_TO_USE_ASSETS\\rock_wall_cluster\\rock_wall_cluster.glb",
+      "imported": {
+        "root": "rock_wall_cluster",
+        "meshes": 2,
+        "materials": 2,
+        "vertices": 300,
+        "triangles": 100,
+        "sockets": [],
+        "actions": 0,
+        "actionNames": [],
+        "boundsBlenderMetres": {
+          "min": [
+            -2.8364,
+            -0.8732,
+            -0.2881
+          ],
+          "max": [
+            2.3373,
+            0.9012,
+            3.2208
+          ],
+          "size": [
+            5.1737,
+            1.7744,
+            3.5088
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "timber_mine_platform",
+      "glb": "READY_TO_USE_ASSETS\\timber_mine_platform\\timber_mine_platform.glb",
+      "imported": {
+        "root": "timber_mine_platform",
+        "meshes": 9,
+        "materials": 9,
+        "vertices": 4933,
+        "triangles": 2144,
+        "sockets": [],
+        "actions": 0,
+        "actionNames": [],
+        "boundsBlenderMetres": {
+          "min": [
+            -13.0,
+            -2.6853,
+            -1.2
+          ],
+          "max": [
+            13.0,
+            2.5554,
+            11.75
+          ],
+          "size": [
+            26.0,
+            5.2407,
+            12.95
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "timber_support_arch",
+      "glb": "READY_TO_USE_ASSETS\\timber_support_arch\\timber_support_arch.glb",
+      "imported": {
+        "root": "timber_support_arch",
+        "meshes": 3,
+        "materials": 3,
+        "vertices": 2803,
+        "triangles": 1236,
+        "sockets": [
+          "SOCKET_apex_fx",
+          "SOCKET_dust_left",
+          "SOCKET_dust_right",
+          "SOCKET_torch_left",
+          "SOCKET_torch_right"
+        ],
+        "actions": 0,
+        "actionNames": [],
+        "boundsBlenderMetres": {
+          "min": [
+            -7.34,
+            -0.455,
+            0.02
+          ],
+          "max": [
+            7.34,
+            0.455,
+            8.6777
+          ],
+          "size": [
+            14.68,
+            0.91,
+            8.6577
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "timber_support_arch_b",
+      "glb": "READY_TO_USE_ASSETS\\timber_support_arch_b\\timber_support_arch_b.glb",
+      "imported": {
+        "root": "timber_support_arch_b",
+        "meshes": 3,
+        "materials": 3,
+        "vertices": 1465,
+        "triangles": 624,
+        "sockets": [
+          "SOCKET_apex_fx",
+          "SOCKET_torch_left",
+          "SOCKET_torch_right"
+        ],
+        "actions": 0,
+        "actionNames": [],
+        "boundsBlenderMetres": {
+          "min": [
+            -7.34,
+            -0.43,
+            0.02
+          ],
+          "max": [
+            7.34,
+            0.43,
+            8.5731
+          ],
+          "size": [
+            14.68,
+            0.86,
+            8.5531
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "timber_support_arch_c",
+      "glb": "READY_TO_USE_ASSETS\\timber_support_arch_c\\timber_support_arch_c.glb",
+      "imported": {
+        "root": "timber_support_arch_c",
+        "meshes": 4,
+        "materials": 4,
+        "vertices": 1381,
+        "triangles": 592,
+        "sockets": [
+          "SOCKET_apex_fx",
+          "SOCKET_torch_left",
+          "SOCKET_torch_right"
+        ],
+        "actions": 0,
+        "actionNames": [],
+        "boundsBlenderMetres": {
+          "min": [
+            -7.34,
+            -0.43,
+            0.02
+          ],
+          "max": [
+            7.34,
+            0.4,
+            8.752
+          ],
+          "size": [
+            14.68,
+            0.83,
+            8.732
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "torch_sconce",
+      "glb": "READY_TO_USE_ASSETS\\torch_sconce\\torch_sconce.glb",
+      "imported": {
+        "root": "torch_sconce",
+        "meshes": 3,
+        "materials": 3,
+        "vertices": 426,
+        "triangles": 208,
+        "sockets": [
+          "SOCKET_point_light",
+          "SOCKET_smoke"
+        ],
+        "actions": 1,
+        "actionNames": [
+          "torch_sconce_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -0.225,
+            -0.3533,
+            0.3336
+          ],
+          "max": [
+            0.225,
+            0.14,
+            1.7259
+          ],
+          "size": [
+            0.45,
+            0.4933,
+            1.3923
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    },
+    {
+      "assetId": "waterfall_frame",
+      "glb": "READY_TO_USE_ASSETS\\waterfall_frame\\waterfall_frame.glb",
+      "imported": {
+        "root": "waterfall_frame",
+        "meshes": 4,
+        "materials": 3,
+        "vertices": 380,
+        "triangles": 184,
+        "sockets": [
+          "SOCKET_mist",
+          "SOCKET_splash"
+        ],
+        "actions": 1,
+        "actionNames": [
+          "waterfall_frame_action_library"
+        ],
+        "boundsBlenderMetres": {
+          "min": [
+            -1.9494,
+            -0.1993,
+            -0.0027
+          ],
+          "max": [
+            1.9494,
+            0.1993,
+            4.3203
+          ],
+          "size": [
+            3.8988,
+            0.3986,
+            4.323
+          ]
+        }
+      },
+      "checks": {
+        "glbExists": true,
+        "rootPresent": true,
+        "rootAssetId": true,
+        "meshCount": true,
+        "materialCount": true,
+        "triangleCount": true,
+        "socketNames": true,
+        "animationPresence": true,
+        "animationCount": true,
+        "animationLibraryName": true
+      },
+      "allPass": true
+    }
+  ]
+}

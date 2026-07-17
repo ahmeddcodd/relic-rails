@@ -1,0 +1,71 @@
+{
+  "assetId": "ember_shard",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "collectible",
+  "description": "Primary golden Ember Shard collectible.",
+  "files": {
+    "runtime": "ember_shard.glb",
+    "source": "ember_shard.blend",
+    "preview": "ember_shard_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "lane position; root at ground and visual centred at 0.9 m",
+  "boundsBlenderMetres": {
+    "min": [
+      -0.25,
+      -0.25,
+      0.63
+    ],
+    "max": [
+      0.25,
+      0.25,
+      1.35
+    ],
+    "size": [
+      0.5,
+      0.5,
+      0.72
+    ]
+  },
+  "performance": {
+    "triangles": 8,
+    "sourceVertices": 6,
+    "meshPrimitives": 1,
+    "materials": 1,
+    "glbBytes": 4904,
+    "triangleBudget": 150
+  },
+  "meshes": [
+    "ANIM_ember_core"
+  ],
+  "materials": [
+    "MAT_GoldCore"
+  ],
+  "sockets": [],
+  "animation": {
+    "fps": 30,
+    "library": "ember_shard_action_library",
+    "clips": [
+      {
+        "name": "collectible_loop",
+        "start": 1,
+        "end": 60,
+        "loop": true,
+        "description": "Shared bob and one-turn spin loop."
+      }
+    ]
+  },
+  "runtimeNotes": [
+    "Runtime collection and magnet pull override the root transform."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}

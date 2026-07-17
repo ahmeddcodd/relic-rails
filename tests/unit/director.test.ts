@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { TrackPath } from '../../src/game/track';
 import { ObstacleManager, CollectibleManager } from '../../src/game/entities';
-import { Director, validatePlan } from '../../src/game/director';
+import { Director, parseBiomeOverride, validatePlan } from '../../src/game/director';
 import { TUNING } from '../../src/config/tuning';
 
 function generate(seed: number, metres: number) {
@@ -14,24 +14,31 @@ function generate(seed: number, metres: number) {
   const collectibles = new CollectibleManager(path, scene);
   const director = new Director(path, obstacles, collectibles);
   director.reset(seed, false);
-  // Simulate a run advancing through the content without rendering. Forks halt
-  // generation until the player commits a side; mirror that here so content
-  // keeps flowing (alternate the choice deterministically).
+  // Simulate a run advancing through the content without rendering.
   let dist = 0;
   let time = 0;
-  let forks = 0;
   while (dist < metres) {
-    if (director.forkPending && dist > director.forkDist - 15) {
-      director.commitFork(forks++ % 2 === 0 ? -1 : 1);
-    }
     director.update(0.5, dist);
     dist += director.targetSpeed * 0.5;
     time += 0.5;
   }
-  return { director, obstacles, time, forks };
+  return { director, obstacles, time };
 }
 
 describe('DifficultyDirector fairness', () => {
+  it('rotates biomes normally when no dev override is supplied', () => {
+    expect(Number.isNaN(parseBiomeOverride(null))).toBe(true);
+    expect(Number.isNaN(parseBiomeOverride(''))).toBe(true);
+    expect(Number.isNaN(parseBiomeOverride('4'))).toBe(true);
+    expect(parseBiomeOverride('2')).toBe(2);
+
+    const { director } = generate(1, 10);
+    expect(director.biomeAt(0)).toBe(0);
+    expect(director.biomeAt(TUNING.biome.length + 1)).toBe(1);
+    expect(director.biomeAt(TUNING.biome.length * 2 + 1)).toBe(2);
+    expect(director.biomeAt(TUNING.biome.length * 3 + 1)).toBe(3);
+  });
+
   it('produces a valid plan across seeds', () => {
     for (const seed of [1, 42, 777, 123456, 987654321]) {
       const { director, obstacles } = generate(seed, 3000);
@@ -49,11 +56,6 @@ describe('DifficultyDirector fairness', () => {
     const { director } = generate(7, 3000);
     expect(director.plan.length).toBeGreaterThan(30);
     expect(director.phase).toBeGreaterThanOrEqual(3);
-  });
-
-  it('spawns forks over a long run', () => {
-    const { forks } = generate(7, 3000);
-    expect(forks).toBeGreaterThanOrEqual(4);
   });
 
   it('track path stays generated ahead', () => {

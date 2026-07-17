@@ -1,0 +1,79 @@
+{
+  "assetId": "ravine_tree",
+  "version": "1.0.0",
+  "game": "Relic Rails: Abyss Run",
+  "category": "environment_prop",
+  "description": "Twisted low-poly ravine tree with layered canopy and subtle wind motion.",
+  "files": {
+    "runtime": "ravine_tree.glb",
+    "source": "ravine_tree.blend",
+    "preview": "ravine_tree_preview.png"
+  },
+  "units": "metres",
+  "threeJsUp": "+Y",
+  "threeJsForward": "+Z",
+  "placement": "ground centre at trunk base",
+  "boundsBlenderMetres": {
+    "min": [
+      -1.0482,
+      -0.4903,
+      -0.0102
+    ],
+    "max": [
+      1.2419,
+      0.6087,
+      3.6708
+    ],
+    "size": [
+      2.2901,
+      1.099,
+      3.681
+    ]
+  },
+  "performance": {
+    "triangles": 260,
+    "sourceVertices": 144,
+    "meshPrimitives": 5,
+    "materials": 2,
+    "glbBytes": 31892,
+    "triangleBudget": 1400
+  },
+  "meshes": [
+    "GEO_wooddark",
+    "ANIM_canopy_0",
+    "ANIM_canopy_1",
+    "ANIM_canopy_2",
+    "ANIM_canopy_3"
+  ],
+  "materials": [
+    "MAT_Leaf",
+    "MAT_WoodDark"
+  ],
+  "sockets": [
+    "SOCKET_leaf_motes"
+  ],
+  "animation": {
+    "fps": 30,
+    "library": "ravine_tree_action_library",
+    "clips": [
+      {
+        "name": "wind_sway_loop",
+        "start": 1,
+        "end": 90,
+        "loop": true,
+        "description": "Three-second unsynchronized canopy sway."
+      }
+    ]
+  },
+  "runtimeNotes": [
+    "Offset playback time per tree instance.",
+    "Leaf motes and mist remain pooled runtime FX."
+  ],
+  "qualityGates": {
+    "triangleBudgetPass": true,
+    "glbSizePass": true,
+    "materialBudgetPass": true,
+    "animationDeclaredPass": true,
+    "allPass": true
+  }
+}
