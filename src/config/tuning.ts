@@ -47,7 +47,9 @@ export const TUNING = {
     duckRiderTop: 2.18,     // measured at the authored duck pose apex
     inputBufferTime: 0.18,  // early-press buffer window
     leanMax: 0.32,          // radians of cart lean during switch
-    crashSpinTime: 1.1,
+    crashDuration: 1.8,     // full authored impact, hop, landing and readable settle
+    crashDeceleration: 26,  // hard stop without an instantaneous camera snap
+    crashTravelScale: 0.24,
   },
 
   // --- Gestures ---
@@ -136,6 +138,10 @@ export const TUNING = {
     posLerp: 7.5,           // spring rates (1/s)
     lateralLag: 5.2,
     shakeDecay: 3.2,
+    crashBack: 8.8,         // safe rear-quarter framing during the impact
+    crashHeight: 3.65,
+    crashSide: 1.5,
+    crashFov: 58,
   },
 } as const;
 

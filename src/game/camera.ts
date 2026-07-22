@@ -63,6 +63,34 @@ export class CameraRig {
     this.apply(dt);
   }
 
+  /** Keep the complete cart and rider readable throughout an impact. */
+  updateCrash(dt: number, cart: CartController): void {
+    const c = TUNING.camera;
+    const intro = Math.min(1, cart.crashProgress / 0.22);
+    const easedIntro = intro * intro * (3 - 2 * intro);
+    const crashLateral = Math.max(
+      TUNING.track.laneOffsets[0] - 0.4,
+      Math.min(
+        TUNING.track.laneOffsets[2] + 0.4,
+        cart.lateral + cart.crashDirection * c.crashSide * easedIntro,
+      ),
+    );
+    const k = 1 - Math.exp(-10.5 * dt);
+
+    this.lateral += (crashLateral - this.lateral) * k;
+    this.path.getPoint(Math.max(0, cart.dist - c.crashBack), this.lateral, tmpA);
+    tmpA.y += c.crashHeight;
+    this.pos.lerp(tmpA, k);
+
+    this.path.getPoint(cart.dist + 0.45, cart.lateral + cart.crashDirection * 0.12, tmpB);
+    tmpB.y += 0.95;
+    this.look.lerp(tmpB, 1 - Math.exp(-12 * dt));
+
+    this.fovCur += (c.crashFov - this.fovCur) * Math.min(1, dt * 6);
+    this.shake = Math.max(0, this.shake - dt * 2.6);
+    this.apply(dt);
+  }
+
   private apply(_dt: number): void {
     this.cam.position.copy(this.pos);
     if (this.shake > 0.001) {

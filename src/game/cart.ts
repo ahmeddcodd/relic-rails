@@ -14,6 +14,7 @@ import {
   type RinModel,
 } from '../render/assets';
 import type { TrackPath } from './track';
+import { sampleCrashMotion, type CrashDirection } from './crashMotion';
 
 export interface CartEvents {
   onSwitch(dir: -1 | 1): void;
@@ -60,7 +61,16 @@ export class CartController {
 
   crashed = false;
   private crashT = 0;
+  private crashSide: CrashDirection = 1;
   stumbleT = 0; // >0 during minor-hit recovery (also brief invulnerability)
+
+  get crashProgress(): number {
+    return Math.min(1, this.crashT / TUNING.cart.crashDuration);
+  }
+
+  get crashDirection(): CrashDirection {
+    return this.crashSide;
+  }
 
   private buffered: BufferedAction = null;
   private bufferAge = 0;
@@ -97,12 +107,15 @@ export class CartController {
     this.ducking = false;
     this.crashed = false;
     this.crashT = 0;
+    this.crashSide = 1;
     this.stumbleT = 0;
     this.buffered = null;
     this.lean = 0;
     this.leanVel = 0;
     this.rinActionT = 0;
+    this.model.hull.position.set(0, 0, 0);
     this.model.hull.rotation.set(0, 0, 0);
+    this.model.hull.scale.set(1, 1, 1);
     this.model.root.rotation.set(0, 0, 0);
     this.model.root.position.set(0, 0, 0);
     this.model.shield.visible = false;
@@ -168,10 +181,29 @@ export class CartController {
   }
 
   startCrash(): void {
+    if (this.crashed) return;
     this.crashed = true;
     this.crashT = 0;
-    playAssetClip(this.model.animationRoot, 'crash', true, 1.1);
-    playAssetClip(this.rin.root, 'crash', true, 1.1);
+    // Outer lanes always fall toward the track centre. Centre-lane impacts use
+    // a stable direction so replays and screenshots remain deterministic.
+    this.crashSide =
+      this.laneIdx === 0 ? 1 : this.laneIdx === 2 ? -1 : Math.floor(this.dist / 12) % 2 === 0 ? 1 : -1;
+    this.airborne = false;
+    this.ducking = false;
+    this.jumpT = -1;
+    this.duckT = 0;
+    this.y = 0;
+    this.buffered = null;
+    this.lean = 0;
+    this.leanVel = 0;
+    this.model.root.position.set(0, 0, 0);
+    this.model.root.rotation.set(0, 0, 0);
+    this.model.hull.position.set(0, 0, 0);
+    this.model.hull.rotation.set(0, 0, 0);
+    this.model.hull.scale.set(1, 1, 1);
+    this.model.shield.visible = false;
+    playAssetClip(this.model.animationRoot, 'crash', true, 1);
+    playAssetClip(this.rin.root, 'crash', true, 1);
   }
 
   stumble(): void {
@@ -197,13 +229,19 @@ export class CartController {
     const c = TUNING.cart;
 
     if (this.crashed) {
-      this.crashT += dt;
-      this.speed = Math.max(0, this.speed - dt * 22);
-      this.dist += this.speed * dt * 0.4;
-      // spin + tip the hull
-      this.model.root.rotation.z += dt * 7;
-      this.model.root.rotation.x += dt * 3.5;
-      this.model.root.position.y = Math.max(0, Math.sin(Math.min(1, this.crashT * 2.2) * Math.PI) * 1.1);
+      this.crashT = Math.min(TUNING.cart.crashDuration, this.crashT + dt);
+      this.speed = Math.max(0, this.speed - dt * TUNING.cart.crashDeceleration);
+      this.dist += this.speed * dt * TUNING.cart.crashTravelScale;
+      const motion = sampleCrashMotion(this.crashT, this.crashSide, TUNING.cart.crashDuration);
+      this.model.root.position.set(0, 0, 0);
+      this.model.root.rotation.set(0, 0, 0);
+      this.model.hull.position.set(motion.drift, motion.lift, motion.recoil);
+      this.model.hull.rotation.set(0, 0, 0);
+      this.model.hull.scale.set(
+        1 + motion.squash * 0.055,
+        1 - motion.squash * 0.11,
+        1 + motion.squash * 0.035,
+      );
       this.applyTransform(dt);
       return;
     }

@@ -670,9 +670,9 @@ export class Game {
     this.view.update(this.cart.dist, dt);
     this.obstacles.update(dt, this.cart.dist);
     this.chase.update(dt, this.cart.dist, true);
-    this.camera.update(dt, this.cart, 1);
+    this.camera.updateCrash(dt, this.cart);
     this.audio.setDynamics(0.2, 1, 0);
-    if (this.crashTimer > 1.45) this.endRun();
+    if (this.crashTimer > TUNING.cart.crashDuration) this.endRun();
   }
 
   private updateTutorial(): void {

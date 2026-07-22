@@ -244,8 +244,9 @@ export class ChaseSystem {
     this.maw.root.visible = show;
     if (!show) return;
 
-    // Map pressure → distance behind the cart (26 m far → 5 m close).
-    const behind = crashing ? Math.max(2.5, 8 - this.grindSpin * 0) : 26 - this.pressure * 21;
+    // Keep the full-scale guardian behind the dedicated crash camera. At the
+    // old 8 m offset it could intersect a camera sitting 7.2 m behind the cart.
+    const behind = crashing ? 13.5 : 26 - this.pressure * 21;
     const d = cartDist - behind;
     if (d >= 0) {
       this.path.getBasis(d, 0, tmpM);
