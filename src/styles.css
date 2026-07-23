@@ -51,6 +51,15 @@ body,
   pointer-events: none;
 }
 
+/* Platform pause is a hard stop. YouTube's overlay owns the screen, so every
+   control underneath must be inert — including RIDE AGAIN on the results
+   screen, which is otherwise fully interactive while the run loop is stopped.
+   `!important` because .screen and button both set pointer-events: auto. */
+#ui-root.frozen,
+#ui-root.frozen * {
+  pointer-events: none !important;
+}
+
 .screen {
   position: absolute;
   inset: 0;

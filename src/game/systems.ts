@@ -54,7 +54,7 @@ export class ScoreSystem {
   private skillEvent(): void {
     this.decay = 0;
     this.tierProgress++;
-    if (this.tierProgress >= TUNING.score.comboPerfectsPerTier && this.comboTier < 5) {
+    if (this.tierProgress >= TUNING.score.comboPerfectsPerTier && this.comboTier < TUNING.score.maxComboTier) {
       this.comboTier++;
       this.tierProgress = 0;
       this.bestComboTier = Math.max(this.bestComboTier, this.comboTier);
@@ -167,6 +167,22 @@ export class OverdriveSystem {
 }
 
 // --- Power-ups -------------------------------------------------------------------
+
+/**
+ * The non-combo score multiplier, DERIVED from live state.
+ *
+ * Both boosts are time-limited. The multiplier used to be written at each
+ * start/stop event, which meant every expiry path had to remember to undo it —
+ * and the frenzy path did not, so a 7 s power-up left its x2 applied for the
+ * rest of the run. Deriving it makes that class of bug impossible.
+ */
+export function scoreMultiplierFor(overdriveActive: boolean, frenzyActive: boolean): number {
+  return (
+    (overdriveActive ? TUNING.overdrive.scoreMult : 1) *
+    (frenzyActive ? TUNING.powerups.frenzyMult : 1)
+  );
+}
+
 export class PowerUpSystem {
   magnetT = 0;
   ghostT = 0;

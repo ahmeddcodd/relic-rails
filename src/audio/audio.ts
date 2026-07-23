@@ -25,8 +25,12 @@ export class AudioSys {
 
   /** Must be called from a user gesture. Safe to call repeatedly. */
   unlock(): void {
+    // While the platform has us paused the bus stays silent, no matter what
+    // gesture arrives. Without this, a first-ever tap during a pause would
+    // CREATE the context and start the music sequencer mid-pause.
+    if (this.paused) return;
     if (this.ctx) {
-      if (this.ctx.state === 'suspended' && !this.paused) void this.ctx.resume();
+      if (this.ctx.state === 'suspended') void this.ctx.resume();
       return;
     }
     const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;

@@ -211,3 +211,16 @@ export function createBridge(): PlatformBridge {
   if (yt && yt.game && yt.IN_PLAYABLES_ENV) return new YouTubeBridge(yt);
   return new LocalBridge();
 }
+
+let shared: PlatformBridge | null = null;
+
+/**
+ * Process-wide bridge. The boot sequence needs to signal `firstFrameReady()`
+ * from main.ts (as soon as the loading screen paints, before the model pack
+ * downloads) while Game owns the rest of the lifecycle — both must talk to the
+ * SAME instance so the idempotence flags actually hold.
+ */
+export function getBridge(): PlatformBridge {
+  shared ??= createBridge();
+  return shared;
+}

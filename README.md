@@ -3,7 +3,8 @@
 An endless minecart runner for **YouTube Playables**, built with Three.js + TypeScript + Vite.
 Rin Vale stole the Sunheart Core; the Emberdeep Railway woke up angry. Swipe to survive,
 collect Ember Shards, chain Perfect actions, ignite Overdrive, and outrun the Iron Maw
-through four biomes: Timber Maw Mine → Flooded Ravine → Crystal Hollow → Ember Forge.
+through four biomes: Crystal Hollow → Timber Maw Mine → Flooded Ravine → Ember Forge
+(dark opener, red-hot finale). The biome order is `BIOMES` in `src/render/palette.ts`.
 
 ## Commands
 
@@ -24,8 +25,15 @@ npm run sizecheck  # Playables bundle-limit check (run after build)
 | Switch rail | swipe ◀ ▶ | A / D or ← / → |
 | Jump | swipe ▲ | W / ↑ / Space |
 | Duck (or fast-fall) | swipe ▼ | S / ↓ |
-| Overdrive | tap the ☀ button | Shift / E |
+| Overdrive | tap the ☀ button, or tap anywhere when charged | Shift / E |
+| Skip the crash | tap | — |
 | Pause (local dev only) | — | Esc |
+
+Swipes commit on **distance alone** (a fast flick commits sooner, at a shorter
+distance) — requiring distance *and* velocity together silently dropped ordinary
+deliberate thumb swipes. A finger that stays down can chain a *different*
+direction (left, then jump) without lifting, but never repeats the same one: that
+turned a single 100 px drag into two lane changes. Thresholds: `TUNING.gesture`.
 
 ## Architecture (short version)
 
@@ -51,11 +59,18 @@ See `ARCHITECTURE-notes in TECHNICAL_DECISIONS.md` for the reasoning behind each
 ## YouTube Playables lifecycle
 
 1. SDK `<script>` loads first in `index.html`.
-2. First rendered frame (loading screen + pre-generated world) → `firstFrameReady()`.
+2. The model pack starts downloading immediately; `firstFrameReady()` fires as
+   soon as the loading screen paints, so YouTube can drop its own spinner without
+   waiting on ~1.8 MiB of GLBs. Boot never blocks on `requestAnimationFrame`,
+   which does not fire in a hidden or throttled tab.
 3. `await loadData()` → migrate save → menu shown → `gameReady()` (player can interact).
 4. Saves are debounced/batched; flushed on run end. Score submission only when the
    submitted value equals the saved best.
 5. Pause/resume only via SDK callbacks (mirrored locally with `visibilitychange`).
+   A pause is a HARD stop in every state, results screen included: the frame
+   loop halts, audio suspends and cannot be restarted by a gesture, the input
+   manager goes inert, and `#ui-root.frozen` makes every button unclickable so
+   nothing can fire underneath YouTube's pause overlay.
 6. Audio bus is gated by `isAudioEnabled()` + `onAudioEnabledChange` and only unlocks
    after a user gesture.
 
@@ -63,6 +78,10 @@ See `ARCHITECTURE-notes in TECHNICAL_DECISIONS.md` for the reasoning behind each
 
 WebGL-capable evergreen browsers. Quality tiers (high/medium/low) selected by a
 non-blocking device heuristic; DPR capped per tier; blob shadows only (no shadow maps).
+That tier is a guess made before the first frame is drawn, so `Gfx.adapt()` then
+corrects the render scale from measured frame time — stepping down below 50 fps
+and recovering above ~74. Only the render buffer scales; geometry, UI and
+gameplay are unaffected.
 
 ## Troubleshooting
 

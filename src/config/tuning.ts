@@ -9,23 +9,29 @@ export const TUNING = {
     sampleCap: 2048,        // ring buffer capacity (2 km live window)
     chunkLen: 32,           // metres of track per visual chunk
     laneOffsets: [-2.2, 0, 2.2] as const,
-    railGauge: 1.1,         // rail pair spacing within a lane
     aheadDist: 260,         // metres of track kept generated ahead of cart
-    behindDist: 60,         // metres kept behind before recycling
-    drawAheadChunks: 8,     // visual chunks ahead of the cart
-    drawBehindChunks: 2,
+    // VISUAL range only — content is still generated `aheadDist` ahead. Fog is
+    // fully opaque by 105-150 m depending on biome, so anything past that is
+    // pure cost: at 8 chunks (256 m) the platform modules alone were 144k
+    // triangles, most of them invisible. N chunks guarantees at least N*32 m of
+    // visible track, so 5 keeps 160-192 m — clear of the ravine's 150 m fog,
+    // the deepest of the four biomes.
+    drawAheadChunks: 5,
+    // The camera sits 7.2 m back, so one chunk behind is ample cover.
+    drawBehindChunks: 1,
+    activateAhead: 170,     // metres ahead at which entity meshes are acquired
+    releaseBehind: 14,      // metres behind at which entities return to the pool
   },
 
   // --- Speed curve (m/s) ---
   speed: {
-    start: 12,
-    phase2: 16,
-    phase3: 19.5,
-    phase4: 23,
-    phase5: 26,
-    max: 34,                // hard ceiling for the endless distance ramp
+    start: 14,
+    phase2: 18,
+    phase3: 22,
+    phase4: 26,
+    phase5: 30,
+    max: 38,                // hard ceiling for the endless distance ramp
     overdriveBonus: 5,
-    rampTime: 22,           // seconds to blend between phase targets
     minorHitLoss: 0.35,     // fraction of speed lost on a minor hit
     recoverTime: 2.2,       // seconds to regain speed after minor hit
     mercyTime: 0.45,        // brief i-frames after a stumble (co-located hazards only, never phases a wall)
@@ -50,24 +56,44 @@ export const TUNING = {
     crashDuration: 1.8,     // full authored impact, hop, landing and readable settle
     crashDeceleration: 26,  // hard stop without an instantaneous camera snap
     crashTravelScale: 0.24,
+    // The authored cart crash clip rolls 113 degrees about the rail plane, so
+    // at full speed the cart body (and Rin, rigidly parented to SOCKET_rider)
+    // swings underneath the deck. Playing it slower stops at a readable
+    // tip-onto-its-side. Measured in-game: 0.7 forced the ground clamp to lift
+    // the rig a full metre; 0.45 settles it at ~0.6 m, which is about where a
+    // real cart on its side would sit.
+    crashRollScale: 0.45,
+    crashGroundClearance: 0.05, // metres the rig is held above the deck on impact
+    crashSkipAfter: 0.5,    // seconds before a tap may skip to the results
   },
 
   // --- Gestures ---
   gesture: {
-    minSwipeDist: 24,       // px
-    minSwipeVel: 0.25,      // px/ms
+    minSwipeDist: 22,       // px — distance alone is enough to commit a swipe
+    minSwipeVel: 0.25,      // px/ms — a fast flick commits earlier, at flickDist
+    flickDist: 12,          // px — shorter threshold when the flick is fast
+    reArmDist: 16,          // px of travel before a held finger can swipe again
     maxTapDist: 14,
     maxTapTime: 260,
   },
 
   // --- Collision windows (metres along track) ---
   collision: {
-    obstacleHalf: 1.0,      // default obstacle half-length
-    grazeExtra: 0.85,       // margin beyond obstacle that counts as a near-miss
+    cartHalf: 0.95,         // half-length of the cart along the track
+    laneWidth: 1.35,        // lateral metres within which a hazard is "in lane"
     pickupRadius: 1.5,
     pickupYRadius: 1.4,
     magnetRadius: 6.5,
+    nearMissLateral: 3.3,   // lateral metres within which a pass counts as a graze
+    oncomingSpeed: 7,       // m/s an oncoming cart closes on the player
   },
+
+  /**
+   * Largest integration step the run loop will take (a 20 fps floor). Slow
+   * devices stretch real time rather than skipping distance, which is what
+   * keeps 1-D collision immune to tunnelling — see the collision-margin test.
+   */
+  maxFrameDt: 0.05,
 
   // --- Score ---
   score: {
@@ -78,7 +104,7 @@ export const TUNING = {
     nearMiss: 80,
     trailComplete: 300,
     airTimePerSec: 40,
-    comboTiers: [1, 2, 3, 4, 5] as const,
+    maxComboTier: 5,         // must match the length of COMBO_NAMES
     comboPerfectsPerTier: 3, // perfects/near-misses needed per tier step
     comboDecayTime: 7.5,     // seconds without skill events before a tier drops
   },
@@ -113,7 +139,9 @@ export const TUNING = {
   },
 
   // --- Difficulty phases (seconds into run) ---
-  phases: [0, 15, 40, 75, 120] as const,
+  // Runs last 60-150 s, so the old 120 s final phase was never reached by most
+  // players. The curve is compressed to put top speed inside a typical run.
+  phases: [0, 12, 30, 55, 85] as const,
 
   // --- Fairness ---
   fairness: {
@@ -135,6 +163,9 @@ export const TUNING = {
     lookAhead: 9.5,
     baseFov: 62,
     fovPerSpeed: 0.45,      // extra fov per m/s over start speed
+    // Speed bonus + overdrive + portrait compensation stack. Without a ceiling
+    // a portrait phone at top speed reaches ~107 degrees and distorts badly.
+    maxFov: 88,
     posLerp: 7.5,           // spring rates (1/s)
     lateralLag: 5.2,
     shakeDecay: 3.2,
@@ -142,6 +173,11 @@ export const TUNING = {
     crashHeight: 3.65,
     crashSide: 1.5,
     crashFov: 58,
+    // Menu hero shot — fixed, not an orbit. Placed ahead of the cart on the
+    // track centreline so the rails run symmetrically up the frame.
+    menuBack: 7.5,
+    menuHeight: 3.4,
+    menuLookHeight: 1,
   },
 } as const;
 

@@ -17,21 +17,23 @@
 - Phase 5 — 4 biomes reachable in sequence (Crystal Hollow → Timber Maw Mine →
   Flooded Ravine → Ember Forge: dark opener, red-hot finale) with transition
   breathers; biome-specific obstacle pools (9 obstacle types).
-- Temple-Run-style **junction forks**: the track halts at a split, reveals two
-  diverging tunnels ~80 m out, and branches toward the lane the player commits to
-  (~15 m out); the whole world turns that way and the unchosen branch peels into
-  the fog. First fork ~465 m, then every ~340–520 m. Fairness-safe: straight
-  lead-in, split shard telegraph, valid default on no input, no hazards on the
-  ungenerated branch.
+- ~~Temple-Run-style **junction forks**~~ — **NOT IN THE BUILD.** Added in commit
+  `ac88908`, then removed entirely by `6cd0cea` (the Blender asset-pack merge),
+  which deleted all 89 lines of fork logic from `director.ts`. `grep -i
+  "fork\|junction"` over `src/` returns nothing today. This entry described a
+  feature that had already been dropped; kept here as a record so the loss is not
+  rediscovered a third time. Restoring it is an open design decision.
 - Phase 6 (partial) — ranks (8 tiers), persistent totals, settings (music/sfx/haptics/
   reduced fx), versioned + migration-tested save.
 - Phase 7 — SDK lifecycle: firstFrameReady → loadData → gameReady ordering, pause/
   resume callbacks, audio-state gating, score submission == saved best, local no-SDK
   operation verified.
-- Phase 8 — bundle ~152 KiB gzipped; ~80–95 draw calls, ~20k tris, 20 MB heap in
-  verification runs; pooling/instancing throughout; zero allocation in hot loops
-  (except tiny input-drain arrays).
-- Phase 9 (partial) — 21 unit tests green; in-browser verification of full loop,
+- Phase 8 — JS bundle ~188 KiB gzipped, 37 files / 2.43 MiB total including the
+  35 authored GLBs. Measured over a 130 s / 3.1 km four-biome soak: **peak 122
+  draw calls** (down from 387 — every prop and platform module now draws through
+  one shared instancer), peak 236k triangles, 0.13 ms of CPU per frame, ~35 MB
+  heap. Adaptive render scale corrects the device tier from real frame time.
+- Phase 9 (partial) — 57 unit tests green; in-browser verification of full loop,
   all four biomes, overdrive, Maw catch, portrait + desktop aspect.
 
 ## Verified in browser

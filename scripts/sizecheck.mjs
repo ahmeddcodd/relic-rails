@@ -29,7 +29,14 @@ function walk(dir) {
     count++;
     total += st.size;
     if (st.size > biggest.size) biggest = { path: p, size: st.size };
-    if (!/^[A-Za-z0-9_.-]+$/.test(name)) badNames.push(p);
+    // The Playables uploader rejects a bundle with "filenames must only contain
+    // supported characters". This used to allow `-`, which let a base64url
+    // build hash through as `portcullis_gate-BJIQbRo-.glb` and failed upload.
+    // vite.config.ts now emits hex hashes with an underscore separator, so the
+    // safe set is exactly [A-Za-z0-9_.] — enforce it here rather than finding
+    // out at the upload step.
+    if (!/^[A-Za-z0-9_.]+$/.test(name)) badNames.push(p);
+    else if (name.startsWith('.') || name.startsWith('_')) badNames.push(p);
   }
 }
 

@@ -100,7 +100,11 @@ export class CameraRig {
     this.cam.lookAt(this.look);
     // Portrait compensation: keep horizontal view usable when tall+narrow.
     const aspect = this.cam.aspect;
-    const fov = aspect < 0.9 ? this.fovCur + (0.9 - aspect) * 34 : this.fovCur;
+    const wide = aspect < 0.9 ? this.fovCur + (0.9 - aspect) * 34 : this.fovCur;
+    // Speed bonus, overdrive kick and portrait compensation all stack. Without
+    // this ceiling a portrait phone at top speed reaches ~107 deg and the edges
+    // of the frame smear badly.
+    const fov = Math.min(TUNING.camera.maxFov, wide);
     if (Math.abs(this.cam.fov - fov) > 0.1) {
       this.cam.fov = fov;
       this.cam.updateProjectionMatrix();

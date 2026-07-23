@@ -74,8 +74,8 @@ const tmpV = new THREE.Vector3();
 const tmpV2 = new THREE.Vector3();
 const FLIP_Y = new THREE.Matrix4().makeRotationY(Math.PI);
 
-const ACTIVATE_AHEAD = 170;
-const RELEASE_BEHIND = 14;
+const ACTIVATE_AHEAD = TUNING.track.activateAhead;
+const RELEASE_BEHIND = TUNING.track.releaseBehind;
 
 const OBSTACLE_ANIMS: Partial<Record<ObstacleType, string>> = {
   beam: 'chain_sway_loop',
@@ -101,7 +101,7 @@ export class ObstacleManager {
       mesh: null,
       resolved: false,
       warned: false,
-      moveSpeed: type === 'oncoming' ? 7 : 0,
+      moveSpeed: type === 'oncoming' ? TUNING.collision.oncomingSpeed : 0,
     });
   }
 
@@ -357,6 +357,10 @@ export class CollectibleManager {
   ): void {
     const pickR = TUNING.collision.pickupRadius;
     const magR = TUNING.collision.magnetRadius;
+    // Highest slot actually drawn this frame. The stores are ring buffers sized
+    // for the worst case, so without this the GPU processes all 448 instances
+    // every frame when only a few dozen are ever on screen.
+    let live = 0;
     for (let i = 0; i < cap; i++) {
       if (s.state[i] !== 1) {
         tmpM.makeScale(0, 0, 0);
@@ -411,7 +415,11 @@ export class CollectibleManager {
       // root height before applying each GLB mesh's relative transform.
       tmpM.setPosition(tmpV.x, tmpV.y + y - 0.9, tmpV.z);
       setInstanceMatrix(model, i, tmpM);
+      live = i + 1;
     }
-    for (const mesh of model.meshes) mesh.instanceMatrix.needsUpdate = true;
+    for (const mesh of model.meshes) {
+      mesh.count = live;
+      mesh.instanceMatrix.needsUpdate = true;
+    }
   }
 }
