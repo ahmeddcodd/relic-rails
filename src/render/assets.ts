@@ -323,8 +323,10 @@ export function mat(color: number, o: MatOpts = {}): THREE.MeshStandardMaterial 
 }
 
 // --- Blob shadow -------------------------------------------------------------
+export type BlobShadow = THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>;
+
 let blobTex: THREE.CanvasTexture | null = null;
-export function blobShadow(radius: number): THREE.Mesh {
+export function blobShadow(radius: number): BlobShadow {
   if (!blobTex) {
     const c = document.createElement('canvas');
     c.width = c.height = 64;
@@ -366,7 +368,7 @@ export interface CartModel {
   riderSocket: THREE.Object3D;
   animationRoot: THREE.Group;
   shield: THREE.Mesh;
-  shadow: THREE.Mesh;
+  shadow: BlobShadow;
 }
 
 export function buildCart(): CartModel {
@@ -375,6 +377,10 @@ export function buildCart(): CartModel {
   const animationRoot = cloneAsset('minecart_hero');
   hull.add(animationRoot);
   root.add(hull);
+  // The authored wheel_spin_loop clip drives these by name, so nothing reads
+  // the handles at runtime. They are resolved anyway as an ASSET CONTRACT
+  // CHECK: a re-export that drops or renames a node fails loudly here at boot
+  // instead of silently shipping a cart with dead wheels.
   const wheels = ['ANIM_wheel_FL', 'ANIM_wheel_FR', 'ANIM_wheel_RL', 'ANIM_wheel_RR'].map((n) =>
     named<THREE.Object3D>(animationRoot, n),
   );
@@ -397,9 +403,10 @@ export function buildCart(): CartModel {
   shield.visible = false;
   root.add(shield);
 
+  // The shadow is deliberately NOT parented here: `root` is lifted by the jump
+  // arc and rolled by the lean spring, which would carry the shadow off the
+  // ground with it. CartController parents it to the track basis instead.
   const shadow = blobShadow(1.5);
-  shadow.position.y = 0.02;
-  root.add(shadow);
   return { root, hull, wheels, lantern, riderSocket, animationRoot, shield, shadow };
 }
 
@@ -415,6 +422,8 @@ export interface RinModel {
 
 export function buildRin(): RinModel {
   const root = cloneAsset('rin_vale');
+  // As with the cart wheels, these handles exist to assert the authored rig is
+  // intact at boot — the embedded clips animate the nodes by name.
   return {
     root,
     torso: named(root, 'ANIM_torso'),
@@ -478,17 +487,11 @@ export type EnvironmentAssetId =
   | 'torch_sconce'
   | 'waterfall_frame';
 
-const ENVIRONMENT_CLIPS: Partial<Record<EnvironmentAssetId, string>> = {
-  forge_gear: 'gear_spin_loop',
-  forge_pipe: 'valve_vent_loop',
-  ravine_tree: 'wind_sway_loop',
-  torch_sconce: 'flame_flicker_loop',
-  waterfall_frame: 'water_flow_loop',
-};
-
-export function buildEnvironmentAsset(id: EnvironmentAssetId): THREE.Group {
-  return cloneAsset(id, ENVIRONMENT_CLIPS[id]);
-}
+// Environment props are drawn exclusively through shared InstancedMeshes (see
+// TrackView), which is what keeps the draw-call count flat as the world
+// scrolls. They therefore have no AnimationMixer: their authored loop clips
+// stay in ASSET_DEFS (so the models remain animatable) but are not played, and
+// torch/magma motion is carried by the pulsing glow instances instead.
 
 // --- Instanced authored assets ----------------------------------------------
 export interface InstancedAsset {

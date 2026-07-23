@@ -181,6 +181,16 @@ export class UI {
     this.loadFill.style.width = `${Math.round(p * 100)}%`;
   }
 
+  /**
+   * Freeze/thaw every DOM control. While YouTube has the game paused its own
+   * overlay owns the screen, so nothing underneath may be clickable — RIDE
+   * AGAIN on the results screen most of all, since that screen is otherwise
+   * fully interactive while the run loop is stopped.
+   */
+  setInteractive(on: boolean): void {
+    this.root.classList.toggle('frozen', !on);
+  }
+
   private show(elm: HTMLElement, on: boolean): void {
     elm.classList.toggle('hidden', !on);
   }

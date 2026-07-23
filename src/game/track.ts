@@ -15,9 +15,7 @@ import { Rand } from '../core/rand';
 import { BIOMES } from '../render/palette';
 import {
   GEO,
-  buildEnvironmentAsset,
   buildInstancedAsset,
-  updateAssetAnimation,
   type AssetId,
   type EnvironmentAssetId,
   type InstancedAsset,
@@ -178,6 +176,8 @@ const PLATFORM_MODULE_LENGTH = 4;
 // Ring cross-sections (lateral, height) — tunnel vs open gorge.
 interface GlowSlot {
   x: number; y: number; z: number; s: number; color: number;
+  /** Per-slot phase so lights do not pulse in lockstep. 0 = steady. */
+  flicker: number;
 }
 
 type PlatformAssetId = Extract<
@@ -196,21 +196,151 @@ const PLATFORM_BY_BIOME: readonly PlatformAssetId[] = [
   'ember_forge_platform',
 ];
 
+/**
+ * Every environment prop is drawn through the shared instancer, with the most
+ * any single chunk may place (see addProps). Over-budget props are dropped
+ * rather than corrupting a neighbouring chunk's slots.
+ *
+ * Animated props are instanced too, which trades their authored node loops for
+ * the draw-call budget. The ratio made that an easy call: forge_pipe is 10 mesh
+ * primitives and forge_gear 12, so at 14 and 7 per screen they alone cost 224
+ * draw calls — for a valve wiggle and a gear spin on tunnel-wall dressing that
+ * passes through fog at 30 m/s. Torch flicker is preserved as a light pulse on
+ * the glow instances instead, which reads better anyway and is free.
+ */
+const PROP_BUDGET: ReadonlyArray<readonly [EnvironmentAssetId, number]> = [
+  ['crystal_cluster_small', 7],
+  ['crystal_cluster_large', 2],
+  ['rail_ballast_cluster', 2],
+  ['rock_wall_cluster', 3],
+  ['timber_support_arch', 2],
+  ['timber_support_arch_b', 2],
+  ['timber_support_arch_c', 2],
+  ['torch_sconce', 2],
+  ['forge_pipe', 2],
+  ['forge_gear', 1],
+  ['ravine_tree', 3],
+  ['waterfall_frame', 1],
+];
+
+/**
+ * One shared InstancedMesh set per asset, carved into a fixed block of slots
+ * per chunk. Visual chunks are pooled and never move, so a chunk's block is
+ * stable and no allocator is needed.
+ *
+ * This is what keeps draw calls flat as the world scrolls. Previously every
+ * prop was an individual GLB clone: the crystal clusters alone cost 135 draw
+ * calls for 5,400 triangles, and the per-chunk platform instancers another 81.
+ */
+interface PoolEntry {
+  asset: InstancedAsset;
+  perChunk: number;
+  /** Which block each chunk slot currently owns, or -1. */
+  blockOfChunk: Int16Array;
+  /** Instances written into each block; -1 marks the block as unowned. */
+  usedInBlock: Int16Array;
+}
+
+class InstancedPool {
+  private entries = new Map<AssetId, PoolEntry>();
+
+  constructor(private scene: THREE.Scene, private chunkCount: number) {}
+
+  register(id: AssetId, perChunk: number): void {
+    if (this.entries.has(id)) return;
+    const asset = buildInstancedAsset(id, perChunk * this.chunkCount);
+    for (const mesh of asset.meshes) mesh.count = 0;
+    this.scene.add(asset.root);
+    this.entries.set(id, {
+      asset,
+      perChunk,
+      blockOfChunk: new Int16Array(this.chunkCount).fill(-1),
+      usedInBlock: new Int16Array(this.chunkCount).fill(-1),
+    });
+  }
+
+  /**
+   * Blocks are allocated per ASSET, always taking the lowest free one, rather
+   * than being pinned to the chunk's pool index. The draw count has to span the
+   * highest live block, so pinned blocks left degenerate gaps underneath — at a
+   * biome boundary, where two platforms are live at once, that inflated the
+   * frame from ~138k to ~249k triangles right as the player crosses over.
+   * Lowest-first keeps every asset's live blocks packed against zero.
+   */
+  private blockFor(entry: PoolEntry, chunkSlot: number): number {
+    const existing = entry.blockOfChunk[chunkSlot];
+    if (existing >= 0) return existing;
+    let block = -1;
+    for (let b = 0; b < this.chunkCount; b++) {
+      if (entry.usedInBlock[b] < 0) {
+        block = b;
+        break;
+      }
+    }
+    if (block < 0) return -1; // every block taken — cannot happen, one per chunk
+    entry.blockOfChunk[chunkSlot] = block;
+    entry.usedInBlock[block] = 0;
+    return block;
+  }
+
+  /** Release a chunk's blocks. Stale matrices would otherwise keep drawing. */
+  clearChunk(chunkSlot: number): void {
+    tmpZeroM.makeScale(0, 0, 0);
+    for (const entry of this.entries.values()) {
+      const block = entry.blockOfChunk[chunkSlot];
+      if (block < 0) continue;
+      const base = block * entry.perChunk;
+      for (let i = 0; i < entry.perChunk; i++) {
+        for (const mesh of entry.asset.meshes) mesh.setMatrixAt(base + i, tmpZeroM);
+      }
+      entry.blockOfChunk[chunkSlot] = -1;
+      entry.usedInBlock[block] = -1;
+    }
+  }
+
+  /** Add one instance for a chunk. False when its budget is exhausted. */
+  place(id: AssetId, chunkSlot: number, matrix: THREE.Matrix4): boolean {
+    const entry = this.entries.get(id);
+    if (!entry) return false;
+    const block = this.blockFor(entry, chunkSlot);
+    if (block < 0) return false;
+    const local = entry.usedInBlock[block];
+    if (local >= entry.perChunk) return false;
+    const index = block * entry.perChunk + local;
+    for (let part = 0; part < entry.asset.meshes.length; part++) {
+      tmpInstanceM.multiplyMatrices(matrix, entry.asset.relativeMatrices[part]);
+      entry.asset.meshes[part].setMatrixAt(index, tmpInstanceM);
+    }
+    entry.usedInBlock[block] = local + 1;
+    return true;
+  }
+
+  /** Re-derive draw counts and upload. Call once per chunk-set change. */
+  flush(): void {
+    for (const entry of this.entries.values()) {
+      let count = 0;
+      for (let b = 0; b < this.chunkCount; b++) {
+        const used = entry.usedInBlock[b];
+        if (used > 0) count = Math.max(count, b * entry.perChunk + used);
+      }
+      for (const mesh of entry.asset.meshes) {
+        mesh.count = count;
+        mesh.instanceMatrix.needsUpdate = true;
+      }
+    }
+  }
+}
+
 // --- Visual chunk --------------------------------------------------------------
 class Chunk {
   group = new THREE.Group();
-  platforms = new Map<PlatformAssetId, InstancedAsset>();
   glows: THREE.InstancedMesh;
-  props: PlacedProp[] = [];
+  /** Authored glow placements, replayed each frame so they can flicker. */
+  glowSlots: GlowSlot[] = [];
   index = -1;
 
-  constructor() {
-    for (const id of PLATFORM_BY_BIOME) {
-      const platform = buildInstancedAsset(id, MODULES_PER_CHUNK);
-      platform.root.visible = false;
-      this.platforms.set(id, platform);
-      this.group.add(platform.root);
-    }
+  /** Stable index into the pooled chunk array — also this chunk's slot block. */
+  constructor(readonly slot: number) {
     this.glows = new THREE.InstancedMesh(GEO.octa(1), glowMaterial(), 14);
     // Instances live in world space far from the mesh origin — the default
     // origin-centred bounding sphere would cull them once the run moves on.
@@ -219,11 +349,6 @@ class Chunk {
     this.group.add(this.glows);
     this.group.visible = false;
   }
-}
-
-interface PlacedProp {
-  id: EnvironmentAssetId;
-  object: THREE.Group;
 }
 
 let _glowMat: THREE.MeshBasicMaterial | null = null;
@@ -235,7 +360,8 @@ function glowMaterial(): THREE.MeshBasicMaterial {
 export class TrackView {
   private chunks: Chunk[] = [];
   private built = new Map<number, Chunk>();
-  private propPools = new Map<EnvironmentAssetId, THREE.Group[]>();
+  private pool: InstancedPool;
+  private glowTime = 0;
 
   constructor(
     private path: TrackPath,
@@ -244,8 +370,11 @@ export class TrackView {
     private quality: 'high' | 'medium' | 'low',
   ) {
     const n = TUNING.track.drawAheadChunks + TUNING.track.drawBehindChunks + 2;
+    this.pool = new InstancedPool(scene, n);
+    for (const id of PLATFORM_BY_BIOME) this.pool.register(id, MODULES_PER_CHUNK);
+    for (const [id, budget] of PROP_BUDGET) this.pool.register(id, budget);
     for (let i = 0; i < n; i++) {
-      const c = new Chunk();
+      const c = new Chunk(i);
       this.chunks.push(c);
       scene.add(c.group);
     }
@@ -255,23 +384,28 @@ export class TrackView {
   reset(): void {
     this.built.clear();
     for (const c of this.chunks) {
-      this.releaseProps(c);
+      this.pool.clearChunk(c.slot);
+      c.glowSlots.length = 0;
       c.index = -1;
       c.group.visible = false;
     }
+    this.pool.flush();
   }
 
   update(cartDist: number, dt = 0): void {
     const cur = Math.floor(cartDist / CHUNK);
     const lo = cur - TUNING.track.drawBehindChunks;
     const hi = cur + TUNING.track.drawAheadChunks;
+    let changed = false;
     // Release chunks out of window
     for (const [idx, c] of this.built) {
       if (idx < lo || idx > hi) {
         this.built.delete(idx);
-        this.releaseProps(c);
+        this.pool.clearChunk(c.slot);
+        c.glowSlots.length = 0;
         c.index = -1;
         c.group.visible = false;
+        changed = true;
       }
     }
     // Build missing
@@ -282,11 +416,36 @@ export class TrackView {
       if (!c) break;
       this.buildChunk(c, idx);
       this.built.set(idx, c);
+      changed = true;
     }
-    if (dt > 0) {
-      for (const c of this.built.values()) {
-        for (const prop of c.props) updateAssetAnimation(prop.object, dt);
+    // Draw counts span every live block, so they must be re-derived whenever
+    // the set of live chunks moves.
+    if (changed) this.pool.flush();
+    if (dt > 0) this.animateGlows(dt);
+  }
+
+  /**
+   * Torch flame and magma light pulse. This replaces the authored flicker clip
+   * that used to require an individual GLB clone per torch: a pulsing LIGHT
+   * reads more like fire than a wobbling mesh does, and this costs ~100 matrix
+   * writes a frame instead of 42 draw calls.
+   */
+  private animateGlows(dt: number): void {
+    this.glowTime += dt;
+    for (const c of this.built.values()) {
+      let dirty = false;
+      for (let i = 0; i < c.glowSlots.length; i++) {
+        const g = c.glowSlots[i];
+        if (g.flicker === 0) continue;
+        const pulse = 1 + Math.sin(this.glowTime * 9 + g.flicker) * 0.14
+                        + Math.sin(this.glowTime * 23 + g.flicker * 2) * 0.06;
+        const s = g.s * pulse;
+        tmpM2.makeScale(s, s * 1.4, s);
+        tmpM2.setPosition(g.x, g.y, g.z);
+        c.glows.setMatrixAt(i, tmpM2);
+        dirty = true;
       }
+      if (dirty) c.glows.instanceMatrix.needsUpdate = true;
     }
   }
 
@@ -297,13 +456,14 @@ export class TrackView {
     const biome = BIOMES[biomeIndex];
     const rand = new Rand(idx * 7919 + 13);
 
+    // Blank this chunk's slot block first — it may have held another biome's
+    // platform or a different prop mix on its previous build.
+    this.pool.clearChunk(c.slot);
+
     // The complete visible platform is authored in Blender. Each four-metre
     // module is instanced onto a grade-aware track basis, so track, bed, walls,
     // mountains, and ceiling remain aligned through curves and slopes.
-    for (const platform of c.platforms.values()) platform.root.visible = false;
-    const platform = c.platforms.get(PLATFORM_BY_BIOME[biomeIndex]);
-    if (!platform) throw new Error(`Missing Blender platform for biome ${biomeIndex}`);
-    platform.root.visible = true;
+    const platformId = PLATFORM_BY_BIOME[biomeIndex];
     for (let moduleIndex = 0; moduleIndex < MODULES_PER_CHUNK; moduleIndex++) {
       const dist = start + (moduleIndex + 0.5) * PLATFORM_MODULE_LENGTH;
       this.path.getBasis(dist, 0, tmpM);
@@ -311,12 +471,8 @@ export class TrackView {
       if ((idx * MODULES_PER_CHUNK + moduleIndex) % 2 === 1) {
         tmpPlatformM.multiply(tmpHalfTurn);
       }
-      for (let partIndex = 0; partIndex < platform.meshes.length; partIndex++) {
-        tmpInstanceM.multiplyMatrices(tmpPlatformM, platform.relativeMatrices[partIndex]);
-        platform.meshes[partIndex].setMatrixAt(moduleIndex, tmpInstanceM);
-      }
+      this.pool.place(platformId, c.slot, tmpPlatformM);
     }
-    for (const mesh of platform.meshes) mesh.instanceMatrix.needsUpdate = true;
 
     // Biome props + glows. On tight curves, skip wide cross-track props —
     // a straight beam through curved space pokes through the walls.
@@ -328,12 +484,14 @@ export class TrackView {
 
     let gi = 0;
     const maxGlow = this.quality === 'low' ? 8 : 14;
+    c.glowSlots.length = 0;
     for (const g of glows) {
       if (gi >= Math.min(c.glows.count, maxGlow)) break;
       tmpM2.makeScale(g.s, g.s * 1.4, g.s);
       tmpM2.setPosition(g.x, g.y, g.z);
       c.glows.setMatrixAt(gi, tmpM2);
       c.glows.setColorAt(gi, tmpC.setHex(g.color));
+      c.glowSlots.push(g);
       gi++;
     }
     for (let k = gi; k < c.glows.count; k++) c.glows.setMatrixAt(k, tmpM2.makeScale(0, 0, 0));
@@ -352,9 +510,17 @@ export class TrackView {
     curvy: boolean,
   ): void {
     const dense = this.quality !== 'low';
-    const glowAt = (d: number, lat: number, h: number, s: number, color: number): void => {
+    /** `flicker` > 0 gives the light a per-slot phase; 0 leaves it steady. */
+    const glowAt = (
+      d: number,
+      lat: number,
+      h: number,
+      s: number,
+      color: number,
+      flicker = 0,
+    ): void => {
       this.path.getPoint(d, lat, tmpV1);
-      glows.push({ x: tmpV1.x, y: tmpV1.y + h, z: tmpV1.z, s, color });
+      glows.push({ x: tmpV1.x, y: tmpV1.y + h, z: tmpV1.z, s, color, flicker });
     };
 
     if (biomeName === 'Timber Maw Mine') {
@@ -370,7 +536,8 @@ export class TrackView {
       for (const off of [4, 20]) {
         const side = rand.chance(0.5) ? -1 : 1;
         this.placeProp(chunk, 'torch_sconce', start + off, side * 7.15, 1.3, 1, side * Math.PI * 0.5);
-        glowAt(start + off, side * 7.0, 2.25, 0.24, 0xffa030);
+        // Flame flicker now lives on the light, not on a per-torch GLB clone.
+        glowAt(start + off, side * 7.0, 2.25, 0.24, 0xffa030, rand.range(0.5, 6.2));
       }
       if (dense && rand.chance(0.65)) {
         const side = rand.chance(0.5) ? -1 : 1;
@@ -421,7 +588,7 @@ export class TrackView {
       for (const off of [6, 22]) {
         const side = rand.chance(0.5) ? -1 : 1;
         this.placeProp(chunk, 'forge_pipe', start + off, side * 7.1, 0, rand.range(0.9, 1.15), side * Math.PI * 0.5);
-        glowAt(start + off, side * 7.2, 1.0, 0.3, 0xff4a10);
+        glowAt(start + off, side * 7.2, 1.0, 0.3, 0xff4a10, rand.range(0.5, 6.2));
       }
       if (dense) {
         const side = rand.chance(0.5) ? -1 : 1;
@@ -429,11 +596,11 @@ export class TrackView {
       }
       // Warning lamps
       glowAt(start + rand.range(2, 30), rand.chance(0.5) ? -6.9 : 6.9, 3.2, 0.14, 0xff2418);
-      // Magma pools at ground edges
+      // Magma pools at ground edges — slow molten breathing.
       if (rand.chance(0.7)) {
         const d = start + rand.range(4, 28);
         const side = rand.chance(0.5) ? -1 : 1;
-        glowAt(d, side * rand.range(5.2, 6.3), -0.4, 0.8, 0xff6a14);
+        glowAt(d, side * rand.range(5.2, 6.3), -0.4, 0.8, 0xff6a14, rand.range(0.5, 6.2));
       }
     }
 
@@ -461,28 +628,11 @@ export class TrackView {
     scale = 1,
     yaw = 0,
   ): void {
-    const pool = this.propPools.get(id) ?? [];
-    this.propPools.set(id, pool);
-    const object = pool.pop() ?? buildEnvironmentAsset(id);
-    if (object.parent !== chunk.group) chunk.group.add(object);
-    object.visible = true;
-    object.matrixAutoUpdate = false;
     this.path.getBasis(dist, lateral, tmpM);
     tmpPropQ.setFromEuler(tmpPropEuler.set(0, yaw, 0));
     tmpPropLocal.compose(tmpPropPos.set(0, height, 0), tmpPropQ, tmpPropScale.setScalar(scale));
-    object.matrix.multiplyMatrices(tmpM, tmpPropLocal);
-    object.matrixWorldNeedsUpdate = true;
-    chunk.props.push({ id, object });
-  }
-
-  private releaseProps(chunk: Chunk): void {
-    for (const prop of chunk.props) {
-      prop.object.visible = false;
-      const pool = this.propPools.get(prop.id) ?? [];
-      this.propPools.set(prop.id, pool);
-      pool.push(prop.object);
-    }
-    chunk.props.length = 0;
+    tmpPropWorld.multiplyMatrices(tmpM, tmpPropLocal);
+    this.pool.place(id, chunk.slot, tmpPropWorld);
   }
 }
 
@@ -490,6 +640,8 @@ const tmpM2 = new THREE.Matrix4();
 const tmpHalfTurn = new THREE.Matrix4().makeRotationY(Math.PI);
 const tmpPlatformM = new THREE.Matrix4();
 const tmpInstanceM = new THREE.Matrix4();
+const tmpZeroM = new THREE.Matrix4();
+const tmpPropWorld = new THREE.Matrix4();
 const tmpPropLocal = new THREE.Matrix4();
 const tmpPropPos = new THREE.Vector3();
 const tmpPropScale = new THREE.Vector3();

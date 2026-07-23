@@ -214,9 +214,44 @@ export class Gfx {
     else this.quality = 'medium';
   }
 
+  private dprCap = 2;
+  /** Adaptive multiplier on the tier's DPR cap, driven by measured frame time. */
+  private renderScale = 1;
+  private frameAccum = 0;
+  private frameCount = 0;
+  private sinceAdapt = 0;
+
   private applyQuality(): void {
-    const dprCap = this.quality === 'high' ? 2 : this.quality === 'medium' ? 1.75 : 1.25;
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, dprCap));
+    this.dprCap = this.quality === 'high' ? 2 : this.quality === 'medium' ? 1.75 : 1.25;
+    this.applyPixelRatio();
+  }
+
+  private applyPixelRatio(): void {
+    const dpr = Math.min(devicePixelRatio || 1, this.dprCap) * this.renderScale;
+    this.renderer.setPixelRatio(Math.max(0.5, dpr));
+  }
+
+  /**
+   * Adaptive resolution. The device heuristic is a guess made before a single
+   * frame has been drawn; this is the correction based on what the hardware
+   * actually delivers. Only the render buffer scales — UI, geometry, and
+   * gameplay are untouched, so nothing about the game changes, just its
+   * sharpness. Wide hysteresis (drop below 50 fps, recover above ~74) keeps it
+   * from oscillating.
+   */
+  adapt(dt: number): void {
+    this.frameAccum += dt;
+    this.frameCount++;
+    this.sinceAdapt += dt;
+    if (this.sinceAdapt < 2 || this.frameCount < 20) return;
+    const avg = this.frameAccum / this.frameCount;
+    this.frameAccum = 0;
+    this.frameCount = 0;
+    this.sinceAdapt = 0;
+    const before = this.renderScale;
+    if (avg > 0.02) this.renderScale = Math.max(0.5, this.renderScale - 0.15);
+    else if (avg < 0.0135) this.renderScale = Math.min(1, this.renderScale + 0.15);
+    if (this.renderScale !== before) this.applyPixelRatio();
   }
 
   /** Resize to CSS size of the canvas parent. Never resets game state. */

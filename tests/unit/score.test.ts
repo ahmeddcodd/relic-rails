@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { ScoreSystem, OverdriveSystem } from '../../src/game/systems';
+import {
+  ScoreSystem,
+  OverdriveSystem,
+  PowerUpSystem,
+  scoreMultiplierFor,
+} from '../../src/game/systems';
 import { TUNING } from '../../src/config/tuning';
 
 describe('ScoreSystem', () => {
@@ -75,5 +80,36 @@ describe('OverdriveSystem', () => {
     od.tryActivate();
     od.fill(0.5);
     expect(od.meter).toBe(0);
+  });
+});
+
+describe('score multiplier', () => {
+  it('stacks overdrive and frenzy', () => {
+    expect(scoreMultiplierFor(false, false)).toBe(1);
+    expect(scoreMultiplierFor(true, false)).toBe(TUNING.overdrive.scoreMult);
+    expect(scoreMultiplierFor(false, true)).toBe(TUNING.powerups.frenzyMult);
+    expect(scoreMultiplierFor(true, true)).toBe(
+      TUNING.overdrive.scoreMult * TUNING.powerups.frenzyMult,
+    );
+  });
+
+  it('drops back to x1 once Shard Frenzy runs out', () => {
+    // The regression: the multiplier used to be latched at pickup and never
+    // cleared on expiry, so a 7 s power-up doubled the rest of the run.
+    const pu = new PowerUpSystem();
+    pu.frenzyT = TUNING.powerups.frenzyTime;
+    expect(scoreMultiplierFor(false, pu.frenzy)).toBe(TUNING.powerups.frenzyMult);
+
+    for (let i = 0; i < 200 && pu.frenzy; i++) pu.update(0.05);
+    expect(pu.frenzy).toBe(false);
+    expect(scoreMultiplierFor(false, pu.frenzy)).toBe(1);
+  });
+
+  it('applies the derived multiplier to skill scoring', () => {
+    const s = new ScoreSystem();
+    s.extraMult = scoreMultiplierFor(true, true);
+    expect(s.perfect()).toBe(
+      TUNING.score.perfect * TUNING.overdrive.scoreMult * TUNING.powerups.frenzyMult,
+    );
   });
 });

@@ -28,8 +28,20 @@ const tmpR = new THREE.Vector3();
 const tmpU = new THREE.Vector3();
 const tmpP = new THREE.Vector3();
 const UP = new THREE.Vector3(0, 1, 0);
+// Deck-penetration clamp scratch (crash path only — never allocated per frame).
+const rigBox = new THREE.Box3();
+const partBox = new THREE.Box3();
+const tmpInv = new THREE.Matrix4();
+const tmpRel = new THREE.Matrix4();
 
 type BufferedAction = 'left' | 'right' | 'jump' | 'duck' | null;
+
+/**
+ * Authored clips played on impact. Rin deliberately does NOT use her own
+ * 'crash' clip — see startCrash(). Exported so the crash test asserts the
+ * contract rather than trusting a comment.
+ */
+export const CRASH_CLIPS = { cart: 'crash', rin: 'stumble' } as const;
 
 export class CartController {
   root = new THREE.Group();
@@ -86,6 +98,9 @@ export class CartController {
     // therefore the only placement offset Rin needs.
     this.model.riderSocket.add(this.rin.root);
     this.root.add(this.model.root);
+    // Parented to the track basis, not the cart body, so it stays pinned to the
+    // deck through jumps and leans (applyTransform cancels the jump height).
+    this.root.add(this.model.shadow);
     scene.add(this.root);
     playAssetClip(this.model.animationRoot, 'idle_loop', true);
     playAssetClip(this.rin.root, 'idle_cart', true);
@@ -202,8 +217,12 @@ export class CartController {
     this.model.hull.rotation.set(0, 0, 0);
     this.model.hull.scale.set(1, 1, 1);
     this.model.shield.visible = false;
-    playAssetClip(this.model.animationRoot, 'crash', true, 1);
-    playAssetClip(this.rin.root, 'crash', true, 1);
+    playAssetClip(this.model.animationRoot, CRASH_CLIPS.cart, true, TUNING.cart.crashRollScale);
+    // NOT Rin's 'crash' clip. Rin is parented to the cart's SOCKET_rider, so her
+    // clip's own 93.7-degree root rotation and -0.38 m root drop COMPOUND with
+    // the cart's roll — together they drove her head 2.26 m below the deck.
+    // 'stumble' is a real balance-loss performance whose root barely moves.
+    playAssetClip(this.rin.root, CRASH_CLIPS.rin, true, 1);
   }
 
   stumble(): void {
@@ -243,6 +262,7 @@ export class CartController {
         1 + motion.squash * 0.035,
       );
       this.applyTransform(dt);
+      this.clampToDeck();
       return;
     }
 
@@ -292,6 +312,47 @@ export class CartController {
     this.applyTransform(dt);
   }
 
+  /**
+   * Hard guarantee that no part of the cart or rider ever enters the deck.
+   *
+   * Measured in the track basis (this.root's local space) where y = 0 IS the
+   * rail plane, so it stays correct through curves and grades. Authored clips
+   * are free to tumble however they like; this lifts the rig by exactly the
+   * penetration depth, making ground clipping structurally impossible.
+   *
+   * Crash-only: during normal play this.root already rides at jump height, so
+   * local y = 0 is the cart, not the deck.
+   */
+  private clampToDeck(): void {
+    const clearance = TUNING.cart.crashGroundClearance;
+    // Measure from a neutral lift so the correction never accumulates.
+    this.model.root.position.y = 0;
+    this.root.updateMatrixWorld(true);
+    tmpInv.copy(this.root.matrixWorld).invert();
+
+    rigBox.makeEmpty();
+    let measured = false;
+    this.root.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh || !mesh.visible) return;
+      // The blob shadow IS the deck plane and the shield is a transient bubble.
+      if (mesh === this.model.shadow || mesh === this.model.shield) return;
+      const geo = mesh.geometry;
+      if (!geo.boundingBox) geo.computeBoundingBox();
+      partBox.copy(geo.boundingBox!);
+      tmpRel.multiplyMatrices(tmpInv, mesh.matrixWorld);
+      partBox.applyMatrix4(tmpRel);
+      rigBox.union(partBox);
+      measured = true;
+    });
+
+    // Headless unit tests construct the cart without the authored GLB meshes.
+    if (!measured) return;
+    if (rigBox.min.y < clearance) {
+      this.model.root.position.y = clearance - rigBox.min.y;
+    }
+  }
+
   private applyTransform(dt: number): void {
     const grade = this.path.getGrade(this.dist);
     this.path.getPoint(this.dist, this.lateral, tmpP);
@@ -304,6 +365,14 @@ export class CartController {
     this.root.matrix.makeBasis(tmpR, tmpU, tmpF);
     tmpP.y += this.y;
     this.root.matrix.setPosition(tmpP);
+
+    // Blob shadow: cancel the jump lift so it stays welded to the deck, then
+    // shrink and fade with height so airborne state reads at a glance.
+    const airT = Math.min(1, this.y / TUNING.cart.jumpHeight);
+    const shadow = this.model.shadow;
+    shadow.position.y = 0.02 - this.y;
+    shadow.scale.set(1 - airT * 0.4, 1 - airT * 0.4, 1);
+    shadow.material.opacity = 0.4 * (1 - airT * 0.55);
 
     // Lean spring
     this.leanVel += (-this.lean * 60 - this.leanVel * 9) * dt;

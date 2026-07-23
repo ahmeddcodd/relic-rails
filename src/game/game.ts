@@ -5,7 +5,7 @@
 // ---------------------------------------------------------------------------
 import * as THREE from 'three';
 import { TUNING } from '../config/tuning';
-import { createBridge, type PlatformBridge } from '../platform/bridge';
+import { getBridge, type PlatformBridge } from '../platform/bridge';
 import { SaveManager } from '../platform/save';
 import { Gfx } from '../render/gfx';
 import { BIOMES } from '../render/palette';
@@ -17,7 +17,14 @@ import { ObstacleManager, CollectibleManager, OBSTACLE_SPECS, type PowerupKind }
 import { CartController } from './cart';
 import { CameraRig } from './camera';
 import { Director, validatePlan } from './director';
-import { ScoreSystem, OverdriveSystem, PowerUpSystem, ChaseSystem, COMBO_NAMES } from './systems';
+import {
+  ScoreSystem,
+  OverdriveSystem,
+  PowerUpSystem,
+  ChaseSystem,
+  COMBO_NAMES,
+  scoreMultiplierFor,
+} from './systems';
 import { UI, rankFor } from '../ui/ui';
 
 type State = 'loading' | 'menu' | 'running' | 'crashing' | 'results';
@@ -60,11 +67,10 @@ export class Game {
   private odTrailAcc = 0;
   private tutorialActive = false;
   private tutorialStep = 0;
-  private menuOrbit = 0;
   private validateTimer = 0;
 
   constructor(canvas: HTMLCanvasElement) {
-    this.bridge = createBridge();
+    this.bridge = getBridge();
     this.save = new SaveManager(this.bridge);
     this.gfx = new Gfx(canvas);
     this.particles = new Particles(this.gfx.scene);
@@ -100,16 +106,21 @@ export class Game {
     });
     this.camera = new CameraRig(this.gfx.camera, this.path);
 
+    // Every UI callback is gated on `paused` as well as the CSS freeze and the
+    // input master switch. Three independent guards, because a stray click
+    // starting a run underneath YouTube's pause overlay is exactly the failure
+    // this must not have.
     this.ui = new UI({
-      onRide: () => this.startRun(),
-      onRideAgain: () => this.startRun(),
-      onToMenu: () => this.toMenu(),
-      onOverdrive: () => this.tryOverdrive(),
-      onSettingChanged: (k, v) => {
-        this.save.data.settings[k] = v;
-        this.applySettings();
-        this.save.save();
-      },
+      onRide: () => this.whenLive(() => this.startRun()),
+      onRideAgain: () => this.whenLive(() => this.startRun()),
+      onToMenu: () => this.whenLive(() => this.toMenu()),
+      onOverdrive: () => this.whenLive(() => this.tryOverdrive()),
+      onSettingChanged: (k, v) =>
+        this.whenLive(() => {
+          this.save.data.settings[k] = v;
+          this.applySettings();
+          this.save.save();
+        }),
       getSettings: () => this.save.data.settings,
     });
 
@@ -168,6 +179,12 @@ export class Game {
     requestAnimationFrame(this.frame);
   }
 
+  /** Run a UI action only if the platform has not paused us. */
+  private whenLive(action: () => void): void {
+    if (this.paused) return;
+    action();
+  }
+
   private applySettings(): void {
     const s = this.save.data.settings;
     // Audio on/off is owned by YouTube (platformAudio via isAudioEnabled). The
@@ -210,6 +227,8 @@ export class Game {
     this.od.reset();
     this.pu.reset();
     this.chase.reset();
+    this.lastTier = 1;
+    this.odWasReady = false;
     this.ui.tutorialPrompt(null);
     this.particles.clear();
     this.biomeIdx = this.director.biomeAt(0);
@@ -268,16 +287,43 @@ export class Game {
     });
   }
 
+  /**
+   * A YouTube pause is a HARD stop, in every state including the results
+   * screen. Four things have to go quiet, not just the run loop:
+   *   • simulation — the frame loop early-returns
+   *   • audio      — the context suspends and cannot be restarted by a gesture
+   *   • gestures   — the input manager goes inert and drops what it had queued
+   *   • the DOM    — every button stops accepting pointer events, so RIDE AGAIN
+   *                  cannot fire underneath YouTube's own pause overlay
+   * Nothing here touches `gameplayEnabled` or the state machine, so resuming
+   * restores exactly the state that was interrupted.
+   */
   private setPaused(on: boolean): void {
     if (on === this.paused) return;
     this.paused = on;
+    this.input.enabled = !on;
+    this.ui.setInteractive(!on);
     if (on) {
-      // Pause ALL execution: the frame loop early-returns, and audio suspends.
       this.audio.pause();
+      // A pause may be the last thing that happens before the platform tears
+      // the game down, so commit anything still sitting in the 400 ms debounce.
+      this.save.flush();
     } else {
       this.audio.resume();
+      // Anything queued while frozen must not fire on resume.
+      this.input.clear();
       this.lastT = performance.now(); // don't integrate the paused gap
     }
+  }
+
+  /**
+   * Single source of truth for the non-combo score multiplier. Overdrive and
+   * Shard Frenzy are both time-limited, so this is derived every frame instead
+   * of written at each start/stop event — a push model has to remember every
+   * expiry path, and one of them (frenzy) was missing.
+   */
+  private syncScoreMult(): void {
+    this.score.extraMult = scoreMultiplierFor(this.od.active, this.pu.frenzy);
   }
 
   private tryOverdrive(): void {
@@ -285,7 +331,8 @@ export class Game {
     if (this.od.tryActivate()) {
       this.audio.overdriveStart();
       this.haptic(40);
-      this.score.extraMult = TUNING.overdrive.scoreMult * (this.pu.frenzy ? TUNING.powerups.frenzyMult : 1);
+      this.ui.hitFlash(true); // gold, not damage-red — the CSS was already there
+      this.syncScoreMult();
       this.camera.fovBonus = TUNING.overdrive.fovBoost;
       this.cart.speedMult = 1 + TUNING.speed.overdriveBonus / this.cart.targetSpeed;
       this.ui.skillLabel('SUNHEART OVERDRIVE!', 'tier');
@@ -296,7 +343,7 @@ export class Game {
   private frame = (t: number): void => {
     requestAnimationFrame(this.frame);
     if (this.paused) return;
-    const dt = Math.min(0.05, Math.max(0.0005, (t - this.lastT) / 1000));
+    const dt = Math.min(TUNING.maxFrameDt, Math.max(0.0005, (t - this.lastT) / 1000));
     this.lastT = t;
 
     switch (this.state) {
@@ -320,21 +367,25 @@ export class Game {
     this.gfx.update(dt);
     this.particles.update(dt);
     this.gfx.render();
+    // Correct the pre-boot device guess against real measured frame time.
+    this.gfx.adapt(dt);
   };
 
+  /**
+   * Fixed hero shot down the centre of the track. This used to orbit the cart
+   * slowly, which drifted the framing away from the composition the menu was
+   * laid out around and put the cart behind the buttons. The pose is derived
+   * from the track basis every frame rather than accumulated, so returning from
+   * a run always lands on exactly the same shot.
+   */
   private updateMenu(dt: number): void {
-    // Slow showcase orbit around the cart.
-    this.menuOrbit += dt * 0.25;
+    const c = TUNING.camera;
     this.view.update(this.cart.dist, dt);
     this.cart.animateIdle(dt);
-    const r = 7.5;
     this.path.getPoint(this.cart.dist, 0, tmpV);
-    this.gfx.camera.position.set(
-      tmpV.x + Math.sin(this.menuOrbit) * r,
-      tmpV.y + 3.4,
-      tmpV.z + Math.cos(this.menuOrbit) * r,
-    );
-    this.gfx.camera.lookAt(tmpV.x, tmpV.y + 1, tmpV.z);
+    // Straight ahead of the cart on the centreline, looking back at it.
+    this.gfx.camera.position.set(tmpV.x, tmpV.y + c.menuHeight, tmpV.z + c.menuBack);
+    this.gfx.camera.lookAt(tmpV.x, tmpV.y + c.menuLookHeight, tmpV.z);
     this.input.drain();
   }
 
@@ -349,6 +400,10 @@ export class Game {
       if (a === 'left' || a === 'right' || a === 'jump' || a === 'duck') {
         this.cart.act(a);
       } else if (a === 'overdrive') {
+        this.tryOverdrive();
+      } else if (a === 'tap' && this.od.ready) {
+        // Anywhere-tap ignites a charged Overdrive. On a phone the 64 px button
+        // is a small target mid-run; the whole screen is a better one.
         this.tryOverdrive();
       } else if (a === 'pause' && !this.bridge.isYouTube) {
         // Dev-only convenience toggle (there is no in-game pause UI). On the
@@ -366,10 +421,13 @@ export class Game {
     this.pu.update(dt);
     if (this.od.update(dt)) {
       // overdrive just expired
-      this.score.extraMult = this.pu.frenzy ? TUNING.powerups.frenzyMult : 1;
       this.camera.fovBonus = 0;
       this.cart.speedMult = 1;
     }
+    // Derive the multiplier every frame rather than writing it at each event.
+    // The old push-model missed frenzy EXPIRY entirely, so a 7 s power-up left
+    // its x2 applied for the rest of the run.
+    this.syncScoreMult();
     this.score.update(dt);
     this.score.addDistance(this.cart.speed * dt);
     this.chase.update(dt, this.cart.dist, false);
@@ -416,6 +474,9 @@ export class Game {
 
     // Collisions + scoring for obstacles
     this.resolveObstacles(now);
+    // One poll covers every way the tier can move (perfect, near-miss, prism,
+    // trail complete, minor hit, decay).
+    this.syncComboTier();
 
     // Caught by the Maw?
     if (this.chase.caught) {
@@ -490,7 +551,7 @@ export class Game {
         break;
       case 'frenzy':
         this.pu.frenzyT = TUNING.powerups.frenzyTime;
-        this.score.extraMult = TUNING.powerups.frenzyMult * (this.od.active ? TUNING.overdrive.scoreMult : 1);
+        this.syncScoreMult();
         this.ui.skillLabel('SHARD FRENZY!', 'nearmiss');
         break;
       case 'repair':
@@ -502,7 +563,7 @@ export class Game {
   }
 
   private resolveObstacles(now: number): void {
-    const cartHalf = 0.95;
+    const cartHalf = TUNING.collision.cartHalf;
     for (const o of this.obstacles.list) {
       if (o.resolved) continue;
       const spec = OBSTACLE_SPECS[o.type];
@@ -516,7 +577,7 @@ export class Game {
 
       const laneLat = TUNING.track.laneOffsets[o.lane];
       const overlap = Math.abs(gapAhead) < spec.halfLen + cartHalf;
-      const sameLane = Math.abs(laneLat - this.cart.lateral) < 1.35;
+      const sameLane = Math.abs(laneLat - this.cart.lateral) < TUNING.collision.laneWidth;
 
       if (overlap && sameLane) {
         // Is the cart clearing it? A jump obstacle is cleared whenever the cart
@@ -582,13 +643,12 @@ export class Game {
           if (this.cart.ducking) this.perfectLabel(`PERFECT DUCK`);
         } else if (spec.action === 'switch') {
           const latDiff = Math.abs(laneLat - this.cart.lateral);
-          if (latDiff < 3.3) {
+          if (latDiff < TUNING.collision.nearMissLateral) {
             if (now - this.lastSwitchAt < 0.65) this.perfectLabel('PERFECT SWITCH');
             else {
               this.score.nearMiss();
               this.od.fill(TUNING.overdrive.fillNearMiss);
               this.ui.skillLabel('NEAR MISS!', 'nearmiss');
-              this.chaseTierCheck();
             }
           }
         }
@@ -597,28 +657,31 @@ export class Game {
   }
 
   private perfectLabel(text: string): void {
-    const before = this.score.comboTier;
     this.score.perfect();
     this.od.fill(TUNING.overdrive.fillPerfect);
     this.ui.skillLabel(text, 'perfect');
     this.audio.perfect();
-    if (this.score.comboTier > before) this.tierUp();
   }
 
-  private chaseTierCheck(): void {
-    // near-miss path shares tier-up feedback
+  /**
+   * Fires the tier-up fanfare exactly once per tier gained, from ANY source.
+   *
+   * This used to be two independent trackers that could disagree, and neither
+   * covered prisms or completed trails — both raise the tier via skillEvent()
+   * but produced no fanfare. Polling one value once per frame covers every path.
+   */
+  private syncComboTier(): void {
     const t = this.score.comboTier;
-    if (t > this.lastTier) this.tierUp();
+    if (t === this.lastTier) return;
+    if (t > this.lastTier) {
+      this.audio.tierUp(t);
+      this.ui.skillLabel(`x${t} ${COMBO_NAMES[t - 1].toUpperCase()}`, 'tier');
+      this.haptic(15);
+    }
+    // Losing a tier (hit or decay) is already signalled by the hit feedback.
     this.lastTier = t;
   }
   private lastTier = 1;
-
-  private tierUp(): void {
-    this.lastTier = this.score.comboTier;
-    this.audio.tierUp(this.score.comboTier);
-    this.ui.skillLabel(`x${this.score.comboTier} ${COMBO_NAMES[this.score.comboTier - 1].toUpperCase()}`, 'tier');
-    this.haptic(15);
-  }
 
   /** Wheel sparks on a lane switch, biased to the push-off side. */
   private sparks(dir: -1 | 1): void {
@@ -651,6 +714,9 @@ export class Game {
   private startCrash(): void {
     this.state = 'crashing';
     this.crashTimer = 0;
+    // Drop anything queued before impact so the swipe that caused the crash
+    // cannot also skip the cinematic once the skip window opens.
+    this.input.clear();
     this.ui.tutorialPrompt(null); // clear any prompt if we die mid-approach
     this.cart.startCrash();
     this.score.majorHit();
@@ -666,6 +732,13 @@ export class Game {
 
   private updateCrashing(dt: number): void {
     this.crashTimer += dt;
+    // Let an impatient player skip to the results, but only once the impact has
+    // actually read — otherwise the swipe that caused the crash also skips it.
+    if (this.crashTimer > TUNING.cart.crashSkipAfter) {
+      for (const a of this.input.drain()) {
+        if (a === 'tap') this.crashTimer = TUNING.cart.crashDuration + 1;
+      }
+    }
     this.cart.update(dt);
     this.view.update(this.cart.dist, dt);
     this.obstacles.update(dt, this.cart.dist);
